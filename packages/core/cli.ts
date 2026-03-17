@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-
+import "dotenv/config";
 import { pathToFileURL } from "node:url";
 import { generateVideo } from "./src/index.js";
-import type { GenerateOptions, GenerateResult, ManimQuality } from "./src/types.js";
+import type { GenerateOptions, ManimQuality } from "./src/types.js";
 
 const VALID_QUALITIES = new Set<ManimQuality>(["low", "medium", "high", "fourk"]);
 

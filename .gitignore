@@ -4,6 +4,10 @@ dist/
 .DS_Store
 media/
 
+# Environment Variables
+.env
+.env.*
+
 # AI Artifacts
 TODOS.md
 .claude/
