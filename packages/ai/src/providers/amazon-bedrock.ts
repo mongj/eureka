@@ -247,7 +247,7 @@ export const streamSimpleBedrock: StreamFunction<"bedrock-converse-stream", Simp
 			maxTokens: adjusted.maxTokens,
 			reasoning: options.reasoning,
 			thinkingBudgets: {
-				...(options.thinkingBudgets || {}),
+				...options.thinkingBudgets,
 				[clampReasoning(options.reasoning)!]: adjusted.thinkingBudget,
 			},
 		} satisfies BedrockOptions);

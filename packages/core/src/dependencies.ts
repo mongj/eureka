@@ -21,8 +21,5 @@ export async function checkFfmpegInstalled(): Promise<void> {
 }
 
 export async function checkAllDependencies(): Promise<void> {
-	await Promise.all([
-		checkManimInstalled(),
-		checkFfmpegInstalled(),
-	]);
+	await Promise.all([checkManimInstalled(), checkFfmpegInstalled()]);
 }

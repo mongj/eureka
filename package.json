@@ -6,9 +6,11 @@
 		"test": "pnpm -r run test",
 		"clean": "pnpm -r run clean",
 		"format": "pnpm oxfmt",
-		"lint": "pnpm oxlint"
+		"lint": "pnpm oxlint",
+		"prepare": "husky"
 	},
 	"devDependencies": {
+		"husky": "^9.1.7",
 		"oxfmt": "latest",
 		"oxlint": "latest",
 		"typescript": "^5.7.3"

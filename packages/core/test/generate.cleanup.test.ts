@@ -38,9 +38,7 @@ vi.mock("../src/tools.js", () => ({
 describe("generateManimCode cleanup", () => {
 	afterEach(async () => {
 		if (mockState.workDir) {
-			await import("node:fs/promises").then(({ rm }) =>
-				rm(mockState.workDir!, { recursive: true, force: true }),
-			);
+			await import("node:fs/promises").then(({ rm }) => rm(mockState.workDir!, { recursive: true, force: true }));
 			mockState.workDir = null;
 		}
 	});

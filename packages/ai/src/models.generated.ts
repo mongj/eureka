@@ -8009,6 +8009,23 @@ export const MODELS = {
 			contextWindow: 32768,
 			maxTokens: 16384,
 		} satisfies Model<"openai-completions">,
+		"mistralai/mistral-small-2603": {
+			id: "mistralai/mistral-small-2603",
+			name: "Mistral: Mistral Small 4",
+			api: "openai-completions",
+			provider: "openrouter",
+			baseUrl: "https://openrouter.ai/api/v1",
+			reasoning: true,
+			input: ["text", "image"],
+			cost: {
+				input: 0.15,
+				output: 0.6,
+				cacheRead: 0,
+				cacheWrite: 0,
+			},
+			contextWindow: 262144,
+			maxTokens: 4096,
+		} satisfies Model<"openai-completions">,
 		"mistralai/mistral-small-3.1-24b-instruct:free": {
 			id: "mistralai/mistral-small-3.1-24b-instruct:free",
 			name: "Mistral: Mistral Small 3.1 24B (free)",
@@ -9154,7 +9171,7 @@ export const MODELS = {
 			api: "openai-completions",
 			provider: "openrouter",
 			baseUrl: "https://openrouter.ai/api/v1",
-			reasoning: false,
+			reasoning: true,
 			input: ["text"],
 			cost: {
 				input: 1.1,
