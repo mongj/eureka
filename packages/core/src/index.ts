@@ -1,15 +1,13 @@
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { rm } from "node:fs/promises";
 import { generateManimCode } from "./generate.js";
-import { renderManimScene, extractSceneName } from "./render.js";
+import { renderManimScene } from "./render.js";
 import { checkAllDependencies } from "./dependencies.js";
-import { NoCodeGeneratedError, type GenerateOptions, type GenerateResult } from "./types.js";
+import { type GenerateOptions, type GenerateResult } from "./types.js";
 
 /**
  * Generate an educational math video from a natural language prompt.
  *
- * Pipeline: prompt → LLM generates Manim code → render to MP4 video.
+ * Pipeline: prompt → Agent generates Manim code (writes scene.py to /tmp) → render to MP4 video.
  *
  * @example
  * ```ts
@@ -26,19 +24,13 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 	// Check dependencies first
 	await checkAllDependencies();
 
-	// Generate code
+	// Generate code via agent — writes scene.py to a temp dir
 	const genStart = Date.now();
-	const { code } = await generateManimCode(prompt, { model: options.model, signal });
+	const { code, sceneName, workDir } = await generateManimCode(prompt, { model: options.model, signal });
 	const generateDurationMs = Date.now() - genStart;
 
-	// Extract scene name
-	const sceneName = extractSceneName(code);
-	if (!sceneName) {
-		throw new NoCodeGeneratedError(code);
-	}
-
-	// Set up temp directory
-	const workDir = options.tmpDir ?? (await mkdtemp(join(tmpdir(), "eureka-")));
+	// Use the agent's workDir for rendering (scene.py is already there)
+	const renderWorkDir = options.tmpDir ?? workDir;
 
 	try {
 		// Render
@@ -48,7 +40,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 			sceneName,
 			quality,
 			timeoutMs: renderTimeoutMs,
-			workDir,
+			workDir: renderWorkDir,
 			signal,
 		});
 		const renderDurationMs = Date.now() - renderStart;
@@ -67,7 +59,6 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 
 		return result;
 	} finally {
-		// Clean up temp directory unless caller wants to keep artifacts.
 		if (!keepArtifacts) {
 			await rm(workDir, { recursive: true, force: true }).catch(() => {
 				console.warn(`[eureka] Failed to clean up temp dir: ${workDir}`);
@@ -80,6 +71,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 export { extractManimCode } from "./generate.js";
 export { extractSceneName, renderManimScene } from "./render.js";
 export { checkAllDependencies, checkManimInstalled, checkFfmpegInstalled } from "./dependencies.js";
+export { createScopedTools } from "./tools.js";
 export { MANIM_SYSTEM_PROMPT } from "./prompts.js";
 export {
 	EurekaError,
