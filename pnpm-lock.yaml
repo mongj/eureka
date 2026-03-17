@@ -92,6 +92,22 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.12.0)
 
+  packages/core:
+    dependencies:
+      '@eureka/agent':
+        specifier: workspace:*
+        version: link:../agent
+      '@eureka/ai':
+        specifier: workspace:*
+        version: link:../ai
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.12.0)
+
 packages:
 
   '@anthropic-ai/sdk@0.73.0':
