@@ -50,6 +50,7 @@ eureka/
 ```
 
 **Responsibilities:**
+
 - `types.ts` — All types and error classes. No logic. No imports from other core modules.
 - `prompts.ts` — System prompt string constant. No imports from other core modules.
 - `dependencies.ts` — `checkManimInstalled()`, `checkFfmpegInstalled()`. Shell-out to `which manim` / `which ffmpeg`. Throws typed errors.
@@ -64,6 +65,7 @@ eureka/
 ### Task 1: Initialize git repo and monorepo root
 
 **Files:**
+
 - Create: `package.json`
 - Create: `pnpm-workspace.yaml`
 - Create: `tsconfig.base.json`
@@ -82,21 +84,21 @@ git init
 
 ```json
 {
-  "name": "eureka",
-  "private": true,
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "scripts": {
-    "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
-    "clean": "pnpm -r run clean"
-  },
-  "devDependencies": {
-    "oxlint": "latest",
-    "oxfmt": "latest",
-    "typescript": "^5.7.3"
-  }
+	"name": "eureka",
+	"private": true,
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"scripts": {
+		"build": "pnpm -r run build",
+		"test": "pnpm -r run test",
+		"clean": "pnpm -r run clean"
+	},
+	"devDependencies": {
+		"oxlint": "latest",
+		"oxfmt": "latest",
+		"typescript": "^5.7.3"
+	}
 }
 ```
 
@@ -113,25 +115,25 @@ Copy the pi-mono pattern — ES2022 target, Node16 module resolution, strict mod
 
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "Node16",
-    "moduleResolution": "Node16",
-    "lib": ["ES2022"],
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": false,
-    "types": ["node"],
-    "useDefineForClassFields": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  }
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "Node16",
+		"moduleResolution": "Node16",
+		"lib": ["ES2022"],
+		"strict": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"inlineSources": true,
+		"resolveJsonModule": true,
+		"allowImportingTsExtensions": false,
+		"types": ["node"],
+		"useDefineForClassFields": false,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	}
 }
 ```
 
@@ -151,11 +153,11 @@ Formatter config using tabs to match pi-mono style:
 
 ```json
 {
-  "useTabs": true,
-  "printWidth": 120,
-  "semi": true,
-  "singleQuote": false,
-  "trailingComma": "all"
+	"useTabs": true,
+	"printWidth": 120,
+	"semi": true,
+	"singleQuote": false,
+	"trailingComma": "all"
 }
 ```
 
@@ -181,6 +183,7 @@ git commit -m "chore: initialize eureka monorepo scaffold with pnpm"
 ### Task 2: Fork pi-mono packages (ai + agent)
 
 **Files:**
+
 - Create: `packages/ai/` (cloned from pi-mono)
 - Create: `packages/agent/` (cloned from pi-mono)
 
@@ -279,6 +282,7 @@ git commit -m "chore: fork pi-mono ai and agent packages into eureka monorepo"
 ### Task 3: Create core package scaffold
 
 **Files:**
+
 - Create: `packages/core/package.json`
 - Create: `packages/core/tsconfig.build.json`
 - Create: `packages/core/vitest.config.ts`
@@ -287,34 +291,34 @@ git commit -m "chore: fork pi-mono ai and agent packages into eureka monorepo"
 
 ```json
 {
-  "name": "@eureka/core",
-  "version": "0.0.1",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@eureka/ai": "workspace:*",
-    "@eureka/agent": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.4"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  }
+	"name": "@eureka/core",
+	"version": "0.0.1",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@eureka/ai": "workspace:*",
+		"@eureka/agent": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "^5.7.3",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
 }
 ```
 
@@ -322,13 +326,13 @@ git commit -m "chore: fork pi-mono ai and agent packages into eureka monorepo"
 
 ```json
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.d.ts", "test"]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./src"
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules", "dist", "**/*.d.ts", "test"]
 }
 ```
 
@@ -352,15 +356,15 @@ This tsconfig covers both src and test directories, adding vitest globals types 
 
 ```json
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": ".",
-    "types": ["node", "vitest/globals"],
-    "noEmit": true
-  },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": ".",
+		"types": ["node", "vitest/globals"],
+		"noEmit": true
+	},
+	"include": ["src/**/*.ts", "test/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
 }
 ```
 
@@ -378,6 +382,7 @@ git commit -m "chore: create core package scaffold"
 ### Task 4: Define types and error classes
 
 **Files:**
+
 - Create: `packages/core/src/types.ts`
 - Test: `packages/core/test/types.test.ts` (not needed — pure types, no logic to test)
 
@@ -547,6 +552,7 @@ git commit -m "feat(core): add type definitions and error hierarchy"
 ### Task 5: Dependency checker
 
 **Files:**
+
 - Create: `packages/core/src/dependencies.ts`
 - Test: `packages/core/test/dependencies.test.ts`
 
@@ -647,6 +653,7 @@ git commit -m "feat(core): add dependency checker for manim and ffmpeg"
 ### Task 6: Implement the manim renderer
 
 **Files:**
+
 - Create: `packages/core/src/render.ts`
 - Test: `packages/core/test/render.test.ts`
 
@@ -780,11 +787,7 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 					reject(new RenderTimeoutError(timeoutMs));
 					return;
 				}
-				reject(new RenderError(
-					`Manim render failed: ${error.message}`,
-					code,
-					stderr || "",
-				));
+				reject(new RenderError(`Manim render failed: ${error.message}`, code, stderr || ""));
 				return;
 			}
 
@@ -801,11 +804,7 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 				const mp4Path = join(outputDir, `${sceneName}.mp4`);
 				resolve(mp4Path);
 			} catch (fsError) {
-				reject(new RenderError(
-					`Could not locate output video: ${(fsError as Error).message}`,
-					code,
-					stderr || "",
-				));
+				reject(new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr || ""));
 			}
 		});
 	});
@@ -834,6 +833,7 @@ git commit -m "feat(core): add manim renderer with scene name extraction"
 ### Task 7: Integration test for rendering (requires manim installed)
 
 **Files:**
+
 - Create: `packages/core/test/render.integration.test.ts`
 
 - [ ] **Step 1: Write integration test**
@@ -933,6 +933,7 @@ git commit -m "test(core): add render integration tests"
 ### Task 8: Write the Manim system prompt
 
 **Files:**
+
 - Create: `packages/core/src/prompts.ts`
 
 - [ ] **Step 1: Create prompts.ts**
@@ -989,6 +990,7 @@ git commit -m "feat(core): add manim system prompt"
 ### Task 9: Implement code generation with LLM
 
 **Files:**
+
 - Create: `packages/core/src/generate.ts`
 - Test: `packages/core/test/extract-code.test.ts`
 
@@ -1096,16 +1098,11 @@ Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement generate.ts**
 
-```typescript
+````typescript
 // packages/core/src/generate.ts
 import { getModel, complete } from "@eureka/ai";
 import { MANIM_SYSTEM_PROMPT } from "./prompts.js";
-import {
-	InvalidPromptError,
-	InvalidModelError,
-	NoCodeGeneratedError,
-	type GenerateOptions,
-} from "./types.js";
+import { InvalidPromptError, InvalidModelError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
 
 /**
  * Extract Manim Python code from an LLM response.
@@ -1173,10 +1170,7 @@ export async function generateManimCode(
 		try {
 			model = getModel(provider as any, modelId as any);
 		} catch (e) {
-			throw new InvalidModelError(
-				options.model,
-				`Unknown model "${options.model}": ${(e as Error).message}`,
-			);
+			throw new InvalidModelError(options.model, `Unknown model "${options.model}": ${(e as Error).message}`);
 		}
 	} else {
 		model = getDefaultModel();
@@ -1202,7 +1196,7 @@ export async function generateManimCode(
 
 	return { code, rawResponse };
 }
-```
+````
 
 - [ ] **Step 4: Run tests to verify extractManimCode passes**
 
@@ -1226,11 +1220,12 @@ git commit -m "feat(core): add LLM code generation with manim code extraction"
 ### Task 10: Wire up the public API
 
 **Files:**
+
 - Create: `packages/core/src/index.ts`
 
 - [ ] **Step 1: Create index.ts**
 
-```typescript
+````typescript
 // packages/core/src/index.ts
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -1261,16 +1256,8 @@ import {
  * console.log(result.code);      // from manim import * ...
  * ```
  */
-export async function generateVideo(
-	prompt: string,
-	options: GenerateOptions = {},
-): Promise<GenerateResult> {
-	const {
-		quality = "low",
-		renderTimeoutMs = 120_000,
-		keepArtifacts = false,
-		signal,
-	} = options;
+export async function generateVideo(prompt: string, options: GenerateOptions = {}): Promise<GenerateResult> {
+	const { quality = "low", renderTimeoutMs = 120_000, keepArtifacts = false, signal } = options;
 
 	// Check dependencies first
 	await checkAllDependencies();
@@ -1287,7 +1274,7 @@ export async function generateVideo(
 	}
 
 	// Set up temp directory
-	const workDir = options.tmpDir ?? await mkdtemp(join(tmpdir(), "eureka-"));
+	const workDir = options.tmpDir ?? (await mkdtemp(join(tmpdir(), "eureka-")));
 
 	try {
 		// Render
@@ -1341,13 +1328,8 @@ export {
 	RenderError,
 	RenderTimeoutError,
 } from "./types.js";
-export type {
-	GenerateOptions,
-	GenerateResult,
-	RenderOptions,
-	ManimQuality,
-} from "./types.js";
-```
+export type { GenerateOptions, GenerateResult, RenderOptions, ManimQuality } from "./types.js";
+````
 
 - [ ] **Step 2: Build the core package**
 
@@ -1373,6 +1355,7 @@ git commit -m "feat(core): add generateVideo public API"
 ### Task 11: End-to-end integration test
 
 **Files:**
+
 - Create: `packages/core/test/generate.test.ts`
 
 - [ ] **Step 1: Write E2E test**
@@ -1399,25 +1382,29 @@ const hasApiKey = !!(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY
 const canRun = manimAvailable && hasApiKey;
 
 describe("generateVideo (E2E)", () => {
-	it.skipIf(!canRun)("generates a video from a simple prompt", async () => {
-		const result = await generateVideo(
-			"Create a simple animation that shows a blue circle being drawn on screen",
-			{ quality: "low", keepArtifacts: true },
-		);
+	it.skipIf(!canRun)(
+		"generates a video from a simple prompt",
+		async () => {
+			const result = await generateVideo("Create a simple animation that shows a blue circle being drawn on screen", {
+				quality: "low",
+				keepArtifacts: true,
+			});
 
-		expect(result.videoPath).toContain(".mp4");
-		expect(result.code).toContain("from manim import");
-		expect(result.sceneName).toBeTruthy();
-		expect(result.generateDurationMs).toBeGreaterThan(0);
-		expect(result.renderDurationMs).toBeGreaterThan(0);
+			expect(result.videoPath).toContain(".mp4");
+			expect(result.code).toContain("from manim import");
+			expect(result.sceneName).toBeTruthy();
+			expect(result.generateDurationMs).toBeGreaterThan(0);
+			expect(result.renderDurationMs).toBeGreaterThan(0);
 
-		// Video file should exist
-		await access(result.videoPath);
+			// Video file should exist
+			await access(result.videoPath);
 
-		console.log(`[E2E] Video generated at: ${result.videoPath}`);
-		console.log(`[E2E] Scene: ${result.sceneName}`);
-		console.log(`[E2E] Generate: ${result.generateDurationMs}ms, Render: ${result.renderDurationMs}ms`);
-	}, 180_000); // 3 minute timeout for LLM + render
+			console.log(`[E2E] Video generated at: ${result.videoPath}`);
+			console.log(`[E2E] Scene: ${result.sceneName}`);
+			console.log(`[E2E] Generate: ${result.generateDurationMs}ms, Render: ${result.renderDurationMs}ms`);
+		},
+		180_000,
+	); // 3 minute timeout for LLM + render
 });
 ```
 
@@ -1476,6 +1463,7 @@ console.log('All error classes present:', [
 ```
 
 Expected output:
+
 ```
 Exports: [generateVideo, extractManimCode, extractSceneName, renderManimScene, ...]
 generateVideo: function
@@ -1522,6 +1510,7 @@ const result = await generateVideo("Explain the Pythagorean theorem visually");
 ```
 
 **Next steps (from TODOS.md):**
+
 1. P1: Self-correcting render loop (feed errors back to LLM, retry)
 2. P2: Sandboxed code execution (before multi-user)
 3. P3: Cloud rendering (for scale)

@@ -155,9 +155,7 @@ export function convertResponsesMessages<TApi extends Api>(
 			const output: ResponseInput = [];
 			const assistantMsg = msg as AssistantMessage;
 			const isDifferentModel =
-				assistantMsg.model !== model.id &&
-				assistantMsg.provider === model.provider &&
-				assistantMsg.api === model.api;
+				assistantMsg.model !== model.id && assistantMsg.provider === model.provider && assistantMsg.api === model.api;
 
 			for (const block of msg.content) {
 				if (block.type === "thinking") {

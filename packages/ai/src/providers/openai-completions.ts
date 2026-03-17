@@ -145,11 +145,7 @@ export const streamOpenAICompletions: StreamFunction<"openai-completions", OpenA
 				}
 
 				if (choice.delta) {
-					if (
-						choice.delta.content !== null &&
-						choice.delta.content !== undefined &&
-						choice.delta.content.length > 0
-					) {
+					if (choice.delta.content !== null && choice.delta.content !== undefined && choice.delta.content.length > 0) {
 						if (!currentBlock || currentBlock.type !== "text") {
 							finishCurrentBlock(currentBlock);
 							currentBlock = { type: "text", text: "" };
@@ -253,9 +249,9 @@ export const streamOpenAICompletions: StreamFunction<"openai-completions", OpenA
 					if (reasoningDetails && Array.isArray(reasoningDetails)) {
 						for (const detail of reasoningDetails) {
 							if (detail.type === "reasoning.encrypted" && detail.id && detail.data) {
-								const matchingToolCall = output.content.find(
-									(b) => b.type === "toolCall" && b.id === detail.id,
-								) as ToolCall | undefined;
+								const matchingToolCall = output.content.find((b) => b.type === "toolCall" && b.id === detail.id) as
+									| ToolCall
+									| undefined;
 								if (matchingToolCall) {
 									matchingToolCall.thoughtSignature = JSON.stringify(detail);
 								}
@@ -320,9 +316,7 @@ function createClient(
 ) {
 	if (!apiKey) {
 		if (!process.env.OPENAI_API_KEY) {
-			throw new Error(
-				"OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass it as an argument.",
-			);
+			throw new Error("OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass it as an argument.");
 		}
 		apiKey = process.env.OPENAI_API_KEY;
 	}
@@ -443,9 +437,7 @@ function maybeAddOpenRouterAnthropicCacheControl(
 
 		const content = msg.content;
 		if (typeof content === "string") {
-			msg.content = [
-				Object.assign({ type: "text" as const, text: content }, { cache_control: { type: "ephemeral" } }),
-			];
+			msg.content = [Object.assign({ type: "text" as const, text: content }, { cache_control: { type: "ephemeral" } })];
 			return;
 		}
 

@@ -371,15 +371,7 @@ async function executeToolCallsSequential(
 		} else {
 			const executed = await executePreparedToolCall(preparation, signal, emit);
 			results.push(
-				await finalizeExecutedToolCall(
-					currentContext,
-					assistantMessage,
-					preparation,
-					executed,
-					config,
-					signal,
-					emit,
-				),
+				await finalizeExecutedToolCall(currentContext, assistantMessage, preparation, executed, config, signal, emit),
 			);
 		}
 	}

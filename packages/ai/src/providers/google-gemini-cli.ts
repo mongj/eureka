@@ -643,8 +643,7 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli", GoogleGe
 
 										const providedId = part.functionCall.id;
 										const needsNewId =
-											!providedId ||
-											output.content.some((b) => b.type === "toolCall" && b.id === providedId);
+											!providedId || output.content.some((b) => b.type === "toolCall" && b.id === providedId);
 										const toolCallId = needsNewId
 											? `${part.functionCall.name}_${Date.now()}_${++toolCallCounter}`
 											: providedId;

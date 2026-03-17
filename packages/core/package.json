@@ -1,31 +1,31 @@
 {
-  "name": "@eureka/core",
-  "version": "0.0.1",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@eureka/agent": "workspace:*",
-    "@eureka/ai": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "^24.12.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.4"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  }
+	"name": "@eureka/core",
+	"version": "0.0.1",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@eureka/agent": "workspace:*",
+		"@eureka/ai": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^24.12.0",
+		"typescript": "^5.7.3",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
 }

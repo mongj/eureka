@@ -1,40 +1,40 @@
 {
-  "name": "@eureka/agent",
-  "version": "0.58.4",
-  "description": "General-purpose agent with transport abstraction, state management, and attachment support",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "scripts": {
-    "clean": "shx rm -rf dist",
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
-    "test": "vitest --run",
-    "prepublishOnly": "npm run clean && npm run build"
-  },
-  "dependencies": {
-    "@eureka/ai": "workspace:*",
-    "@sinclair/typebox": "^0.34.48"
-  },
-  "keywords": [
-    "ai",
-    "agent",
-    "llm",
-    "transport",
-    "state-management"
-  ],
-  "author": "Mario Zechner",
-  "license": "MIT",
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.3.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.4"
-  }
+	"name": "@eureka/agent",
+	"version": "0.58.4",
+	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
+	"keywords": [
+		"agent",
+		"ai",
+		"llm",
+		"state-management",
+		"transport"
+	],
+	"license": "MIT",
+	"author": "Mario Zechner",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+		"test": "vitest --run",
+		"prepublishOnly": "pnpm clean && pnpm build"
+	},
+	"dependencies": {
+		"@eureka/ai": "workspace:*",
+		"@sinclair/typebox": "^0.34.48"
+	},
+	"devDependencies": {
+		"@types/node": "^24.3.0",
+		"typescript": "^5.7.3",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
 }

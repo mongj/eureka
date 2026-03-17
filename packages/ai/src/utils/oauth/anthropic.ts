@@ -134,9 +134,7 @@ async function startCallbackServer(expectedState: string): Promise<CallbackServe
 
 				if (!code || !state) {
 					res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
-					res.end(
-						`<html><body><h1>Authentication Failed</h1><p>Missing code or state parameter.</p></body></html>`,
-					);
+					res.end(`<html><body><h1>Authentication Failed</h1><p>Missing code or state parameter.</p></body></html>`);
 					return;
 				}
 

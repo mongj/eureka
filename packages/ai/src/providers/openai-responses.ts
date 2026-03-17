@@ -154,9 +154,7 @@ function createClient(
 ) {
 	if (!apiKey) {
 		if (!process.env.OPENAI_API_KEY) {
-			throw new Error(
-				"OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass it as an argument.",
-			);
+			throw new Error("OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass it as an argument.");
 		}
 		apiKey = process.env.OPENAI_API_KEY;
 	}

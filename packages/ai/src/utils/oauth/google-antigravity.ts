@@ -94,9 +94,7 @@ async function startCallbackServer(): Promise<CallbackServerInfo> {
 					result = { code, state };
 				} else {
 					res.writeHead(400, { "Content-Type": "text/html" });
-					res.end(
-						`<html><body><h1>Authentication Failed</h1><p>Missing code or state parameter.</p></body></html>`,
-					);
+					res.end(`<html><body><h1>Authentication Failed</h1><p>Missing code or state parameter.</p></body></html>`);
 				}
 			} else {
 				res.writeHead(404);

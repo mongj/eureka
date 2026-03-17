@@ -15,17 +15,17 @@ import { Agent } from "@mariozechner/pi-agent-core";
 import { getModel } from "@mariozechner/pi-ai";
 
 const agent = new Agent({
-  initialState: {
-    systemPrompt: "You are a helpful assistant.",
-    model: getModel("anthropic", "claude-sonnet-4-20250514"),
-  },
+	initialState: {
+		systemPrompt: "You are a helpful assistant.",
+		model: getModel("anthropic", "claude-sonnet-4-20250514"),
+	},
 });
 
 agent.subscribe((event) => {
-  if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
-    // Stream just the new text chunk
-    process.stdout.write(event.assistantMessageEvent.delta);
-  }
+	if (event.type === "message_update" && event.assistantMessageEvent.type === "text_delta") {
+		// Stream just the new text chunk
+		process.stdout.write(event.assistantMessageEvent.delta);
+	}
 });
 
 await agent.prompt("Hello!");
@@ -36,6 +36,7 @@ await agent.prompt("Hello!");
 ### AgentMessage vs LLM Message
 
 The agent works with `AgentMessage`, a flexible type that can include:
+
 - Standard LLM messages (`user`, `assistant`, `toolResult`)
 - Custom app-specific message types via declaration merging
 
@@ -121,18 +122,18 @@ The last message in context must be `user` or `toolResult` (not `assistant`).
 
 ### Event Types
 
-| Event | Description |
-|-------|-------------|
-| `agent_start` | Agent begins processing |
-| `agent_end` | Agent completes with all new messages |
-| `turn_start` | New turn begins (one LLM call + tool executions) |
-| `turn_end` | Turn completes with assistant message and tool results |
-| `message_start` | Any message begins (user, assistant, toolResult) |
-| `message_update` | **Assistant only.** Includes `assistantMessageEvent` with delta |
-| `message_end` | Message completes |
-| `tool_execution_start` | Tool begins |
-| `tool_execution_update` | Tool streams progress |
-| `tool_execution_end` | Tool completes |
+| Event                   | Description                                                     |
+| ----------------------- | --------------------------------------------------------------- |
+| `agent_start`           | Agent begins processing                                         |
+| `agent_end`             | Agent completes with all new messages                           |
+| `turn_start`            | New turn begins (one LLM call + tool executions)                |
+| `turn_end`              | Turn completes with assistant message and tool results          |
+| `message_start`         | Any message begins (user, assistant, toolResult)                |
+| `message_update`        | **Assistant only.** Includes `assistantMessageEvent` with delta |
+| `message_end`           | Message completes                                               |
+| `tool_execution_start`  | Tool begins                                                     |
+| `tool_execution_update` | Tool streams progress                                           |
+| `tool_execution_end`    | Tool completes                                                  |
 
 ## Agent Options
 
@@ -199,15 +200,15 @@ const agent = new Agent({
 
 ```typescript
 interface AgentState {
-  systemPrompt: string;
-  model: Model<any>;
-  thinkingLevel: ThinkingLevel;
-  tools: AgentTool<any>[];
-  messages: AgentMessage[];
-  isStreaming: boolean;
-  streamMessage: AgentMessage | null;  // Current partial during streaming
-  pendingToolCalls: Set<string>;
-  error?: string;
+	systemPrompt: string;
+	model: Model<any>;
+	thinkingLevel: ThinkingLevel;
+	tools: AgentTool<any>[];
+	messages: AgentMessage[];
+	isStreaming: boolean;
+	streamMessage: AgentMessage | null; // Current partial during streaming
+	pendingToolCalls: Set<string>;
+	error?: string;
 }
 ```
 
@@ -222,9 +223,7 @@ Access via `agent.state`. During streaming, `streamMessage` contains the partial
 await agent.prompt("Hello");
 
 // With images
-await agent.prompt("What's in this image?", [
-  { type: "image", data: base64Data, mimeType: "image/jpeg" }
-]);
+await agent.prompt("What's in this image?", [{ type: "image", data: base64Data, mimeType: "image/jpeg" }]);
 
 // AgentMessage directly
 await agent.prompt({ role: "user", content: "Hello", timestamp: Date.now() });
@@ -246,7 +245,7 @@ agent.setAfterToolCall(async ({ toolCall, result }) => undefined);
 agent.replaceMessages(newMessages);
 agent.appendMessage(message);
 agent.clearMessages();
-agent.reset();  // Clear everything
+agent.reset(); // Clear everything
 ```
 
 ### Session and Thinking Budgets
@@ -255,17 +254,17 @@ agent.reset();  // Clear everything
 agent.sessionId = "session-123";
 
 agent.thinkingBudgets = {
-  minimal: 128,
-  low: 512,
-  medium: 1024,
-  high: 2048,
+	minimal: 128,
+	low: 512,
+	medium: 1024,
+	high: 2048,
 };
 ```
 
 ### Control
 
 ```typescript
-agent.abort();           // Cancel current operation
+agent.abort(); // Cancel current operation
 await agent.waitForIdle(); // Wait for completion
 ```
 
@@ -273,7 +272,7 @@ await agent.waitForIdle(); // Wait for completion
 
 ```typescript
 const unsubscribe = agent.subscribe((event) => {
-  console.log(event.type);
+	console.log(event.type);
 });
 unsubscribe();
 ```
@@ -288,16 +287,16 @@ agent.setFollowUpMode("one-at-a-time");
 
 // While agent is running tools
 agent.steer({
-  role: "user",
-  content: "Stop! Do this instead.",
-  timestamp: Date.now(),
+	role: "user",
+	content: "Stop! Do this instead.",
+	timestamp: Date.now(),
 });
 
 // After the agent finishes its current work
 agent.followUp({
-  role: "user",
-  content: "Also summarize the result.",
-  timestamp: Date.now(),
+	role: "user",
+	content: "Also summarize the result.",
+	timestamp: Date.now(),
 });
 
 const steeringMode = agent.getSteeringMode();
@@ -311,6 +310,7 @@ agent.clearAllQueues();
 Use clearSteeringQueue, clearFollowUpQueue, or clearAllQueues to drop queued messages.
 
 When steering messages are detected after a tool completes:
+
 1. Remaining tools are skipped with error results
 2. Steering messages are injected
 3. LLM responds to the interruption
@@ -323,9 +323,9 @@ Extend `AgentMessage` via declaration merging:
 
 ```typescript
 declare module "@mariozechner/pi-agent-core" {
-  interface CustomAgentMessages {
-    notification: { role: "notification"; text: string; timestamp: number };
-  }
+	interface CustomAgentMessages {
+		notification: { role: "notification"; text: string; timestamp: number };
+	}
 }
 
 // Now valid
@@ -336,10 +336,11 @@ Handle custom types in `convertToLlm`:
 
 ```typescript
 const agent = new Agent({
-  convertToLlm: (messages) => messages.flatMap(m => {
-    if (m.role === "notification") return []; // Filter out
-    return [m];
-  }),
+	convertToLlm: (messages) =>
+		messages.flatMap((m) => {
+			if (m.role === "notification") return []; // Filter out
+			return [m];
+		}),
 });
 ```
 
@@ -351,23 +352,23 @@ Define tools using `AgentTool`:
 import { Type } from "@sinclair/typebox";
 
 const readFileTool: AgentTool = {
-  name: "read_file",
-  label: "Read File",  // For UI display
-  description: "Read a file's contents",
-  parameters: Type.Object({
-    path: Type.String({ description: "File path" }),
-  }),
-  execute: async (toolCallId, params, signal, onUpdate) => {
-    const content = await fs.readFile(params.path, "utf-8");
+	name: "read_file",
+	label: "Read File", // For UI display
+	description: "Read a file's contents",
+	parameters: Type.Object({
+		path: Type.String({ description: "File path" }),
+	}),
+	execute: async (toolCallId, params, signal, onUpdate) => {
+		const content = await fs.readFile(params.path, "utf-8");
 
-    // Optional: stream progress
-    onUpdate?.({ content: [{ type: "text", text: "Reading..." }], details: {} });
+		// Optional: stream progress
+		onUpdate?.({ content: [{ type: "text", text: "Reading..." }], details: {} });
 
-    return {
-      content: [{ type: "text", text: content }],
-      details: { path: params.path, size: content.length },
-    };
-  },
+		return {
+			content: [{ type: "text", text: content }],
+			details: { path: params.path, size: content.length },
+		};
+	},
 };
 
 agent.setTools([readFileTool]);
@@ -379,12 +380,12 @@ agent.setTools([readFileTool]);
 
 ```typescript
 execute: async (toolCallId, params, signal, onUpdate) => {
-  if (!fs.existsSync(params.path)) {
-    throw new Error(`File not found: ${params.path}`);
-  }
-  // Return content only on success
-  return { content: [{ type: "text", text: "..." }] };
-}
+	if (!fs.existsSync(params.path)) {
+		throw new Error(`File not found: ${params.path}`);
+	}
+	// Return content only on success
+	return { content: [{ type: "text", text: "..." }] };
+};
 ```
 
 Thrown errors are caught by the agent and reported to the LLM as tool errors with `isError: true`.
@@ -397,12 +398,12 @@ For browser apps that proxy through a backend:
 import { Agent, streamProxy } from "@mariozechner/pi-agent-core";
 
 const agent = new Agent({
-  streamFn: (model, context, options) =>
-    streamProxy(model, context, {
-      ...options,
-      authToken: "...",
-      proxyUrl: "https://your-server.com",
-    }),
+	streamFn: (model, context, options) =>
+		streamProxy(model, context, {
+			...options,
+			authToken: "...",
+			proxyUrl: "https://your-server.com",
+		}),
 });
 ```
 
@@ -414,28 +415,28 @@ For direct control without the Agent class:
 import { agentLoop, agentLoopContinue } from "@mariozechner/pi-agent-core";
 
 const context: AgentContext = {
-  systemPrompt: "You are helpful.",
-  messages: [],
-  tools: [],
+	systemPrompt: "You are helpful.",
+	messages: [],
+	tools: [],
 };
 
 const config: AgentLoopConfig = {
-  model: getModel("openai", "gpt-4o"),
-  convertToLlm: (msgs) => msgs.filter(m => ["user", "assistant", "toolResult"].includes(m.role)),
-  toolExecution: "parallel",
-  beforeToolCall: async ({ toolCall, args, context }) => undefined,
-  afterToolCall: async ({ toolCall, result, isError, context }) => undefined,
+	model: getModel("openai", "gpt-4o"),
+	convertToLlm: (msgs) => msgs.filter((m) => ["user", "assistant", "toolResult"].includes(m.role)),
+	toolExecution: "parallel",
+	beforeToolCall: async ({ toolCall, args, context }) => undefined,
+	afterToolCall: async ({ toolCall, result, isError, context }) => undefined,
 };
 
 const userMessage = { role: "user", content: "Hello", timestamp: Date.now() };
 
 for await (const event of agentLoop([userMessage], context, config)) {
-  console.log(event.type);
+	console.log(event.type);
 }
 
 // Continue from existing context
 for await (const event of agentLoopContinue(context, config)) {
-  console.log(event.type);
+	console.log(event.type);
 }
 ```
 

@@ -67,9 +67,7 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 				const mp4Path = join(outputDir, `${sceneName}.mp4`);
 				resolve(mp4Path);
 			} catch (fsError) {
-				reject(
-					new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr || ""),
-				);
+				reject(new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr || ""));
 			}
 		});
 	});

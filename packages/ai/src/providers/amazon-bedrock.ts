@@ -334,8 +334,7 @@ function handleContentBlockDelta(
 				});
 			}
 			if (delta.reasoningContent.signature) {
-				thinkingBlock.thinkingSignature =
-					(thinkingBlock.thinkingSignature || "") + delta.reasoningContent.signature;
+				thinkingBlock.thinkingSignature = (thinkingBlock.thinkingSignature || "") + delta.reasoningContent.signature;
 			}
 		}
 	}

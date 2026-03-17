@@ -1,13 +1,13 @@
 {
-  "plugins": {
-    "context7-plugin": {
-      "enabled": true
-    },
-    "supabase": {
-      "enabled": true
-    },
-    "superpowers": {
-      "enabled": true
-    }
-  }
+	"plugins": {
+		"context7-plugin": {
+			"enabled": true
+		},
+		"supabase": {
+			"enabled": true
+		},
+		"superpowers": {
+			"enabled": true
+		}
+	}
 }
