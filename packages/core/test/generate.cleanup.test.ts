@@ -7,6 +7,7 @@ const mockState = vi.hoisted(() => ({
 
 vi.mock("@eureka/ai", () => ({
 	getModel: vi.fn(() => ({ id: "test-model" })),
+	resolveModelFromString: vi.fn(() => ({ id: "test-model" })),
 }));
 
 vi.mock("@eureka/agent", () => {

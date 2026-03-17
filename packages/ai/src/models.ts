@@ -25,6 +25,26 @@ export function getModel<TProvider extends KnownProvider, TModelId extends keyof
 	return providerModels?.get(modelId as string) as Model<ModelApi<TProvider, TModelId>>;
 }
 
+/**
+ * Resolve a model from a "provider/model-id" string.
+ * Throws if the format is invalid or the model is not found.
+ */
+export function resolveModelFromString(modelStr: string): Model<Api> {
+	const slashIndex = modelStr.indexOf("/");
+	if (slashIndex === -1) {
+		throw new Error(
+			`Invalid model format: "${modelStr}". Expected "provider/model-id" (e.g., "anthropic/claude-sonnet-4").`,
+		);
+	}
+	const provider = modelStr.slice(0, slashIndex);
+	const modelId = modelStr.slice(slashIndex + 1);
+	const model = getModel(provider as any, modelId as any);
+	if (!model) {
+		throw new Error(`Unknown model: "${modelStr}"`);
+	}
+	return model;
+}
+
 export function getProviders(): KnownProvider[] {
 	return Array.from(modelRegistry.keys()) as KnownProvider[];
 }
