@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { ManimNotFoundError, DependencyError } from "./types.js";
+import { DependencyError, ManimNotFoundError } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -21,6 +21,8 @@ export async function checkFfmpegInstalled(): Promise<void> {
 }
 
 export async function checkAllDependencies(): Promise<void> {
-	await checkManimInstalled();
-	await checkFfmpegInstalled();
+	await Promise.all([
+		checkManimInstalled(),
+		checkFfmpegInstalled(),
+	]);
 }
