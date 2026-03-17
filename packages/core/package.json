@@ -1,6 +1,9 @@
 {
 	"name": "@eureka/core",
 	"version": "0.0.1",
+	"bin": {
+		"eureka": "./dist/cli.js"
+	},
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -12,9 +15,10 @@
 	},
 	"scripts": {
 		"clean": "rm -rf dist",
-		"build": "tsc -p tsconfig.build.json",
+		"build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json",
 		"dev": "tsc -p tsconfig.build.json --watch",
-		"test": "vitest run"
+		"test": "vitest run",
+		"cli": "node ./dist/cli.js"
 	},
 	"dependencies": {
 		"@eureka/agent": "workspace:*",
