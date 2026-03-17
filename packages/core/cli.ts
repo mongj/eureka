@@ -37,7 +37,7 @@ async function loadGenerateVideo(): Promise<GenerateVideoFn> {
 
 export function printHelp(): string {
 	return [
-		"Usage: eureka-core [options] <prompt>",
+		"Usage: eureka [options] <prompt>",
 		"",
 		"Options:",
 		"  --quality <low|medium|high|fourk>  Render quality",
