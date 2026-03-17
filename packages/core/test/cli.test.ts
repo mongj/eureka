@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import type { GenerateResult } from "../src/types.js";
 
+const mockState = vi.hoisted(() => ({
+	generateVideo: vi.fn(),
+}));
+
+vi.mock("../src/index.js", () => ({
+	generateVideo: (...args: unknown[]) => mockState.generateVideo(...args),
+}));
+
 describe("parseCliArgs", () => {
 	it("parses a prompt with quality and keep-artifacts flags", async () => {
 		const { parseCliArgs } = await import("../cli.js");
@@ -80,7 +88,8 @@ describe("parseCliArgs", () => {
 describe("runCli", () => {
 	it("prints the generated result details on success", async () => {
 		const { runCli } = await import("../cli.js");
-		const output: string[] = [];
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		const result: GenerateResult = {
 			videoPath: "/tmp/demo.mp4",
 			code: "from manim import *",
@@ -90,14 +99,13 @@ describe("runCli", () => {
 			artifactsDir: "/tmp/eureka-demo",
 		};
 
-		const exitCode = await runCli(["--keep-artifacts", "show a circle"], {
-			generateVideo: vi.fn(async () => result),
-			stdout: (line) => output.push(line),
-			stderr: vi.fn(),
-		});
+		mockState.generateVideo.mockResolvedValue(result);
+
+		const exitCode = await runCli(["--keep-artifacts", "show a circle"]);
 
 		expect(exitCode).toBe(0);
-		expect(output).toEqual([
+		expect(errorSpy).not.toHaveBeenCalled();
+		expect(logSpy.mock.calls.map(([line]) => line)).toEqual([
 			"[eureka] Prompt: show a circle",
 			"[eureka] Generating video...",
 			"[eureka] Video: /tmp/demo.mp4",
@@ -106,35 +114,41 @@ describe("runCli", () => {
 			"[eureka] Render: 5678ms",
 			"[eureka] Artifacts: /tmp/eureka-demo",
 		]);
+
+		logSpy.mockRestore();
+		errorSpy.mockRestore();
 	});
 
 	it("prints help and exits successfully", async () => {
 		const { runCli } = await import("../cli.js");
-		const output: string[] = [];
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-		const exitCode = await runCli(["--help"], {
-			generateVideo: vi.fn(),
-			stdout: (line) => output.push(line),
-			stderr: vi.fn(),
-		});
+		const exitCode = await runCli(["--help"]);
 
 		expect(exitCode).toBe(0);
-		expect(output[0]).toContain("Usage:");
+		expect(errorSpy).not.toHaveBeenCalled();
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy.mock.calls[0][0]).toContain("Usage:");
+
+		logSpy.mockRestore();
+		errorSpy.mockRestore();
 	});
 
 	it("prints a readable error and exits non-zero on failure", async () => {
 		const { runCli } = await import("../cli.js");
-		const errors: string[] = [];
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-		const exitCode = await runCli(["show a circle"], {
-			generateVideo: vi.fn(async () => {
-				throw new Error("boom");
-			}),
-			stdout: vi.fn(),
-			stderr: (line) => errors.push(line),
-		});
+		mockState.generateVideo.mockRejectedValue(new Error("boom"));
+
+		const exitCode = await runCli(["show a circle"]);
 
 		expect(exitCode).toBe(1);
-		expect(errors).toEqual(["[eureka] Error: boom"]);
+		expect(logSpy).toHaveBeenCalledWith("[eureka] Prompt: show a circle");
+		expect(errorSpy).toHaveBeenCalledWith("[eureka] Error: boom");
+
+		logSpy.mockRestore();
+		errorSpy.mockRestore();
 	});
 });

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from "node:url";
+import { generateVideo } from "./src/index.js";
 import type { GenerateOptions, GenerateResult, ManimQuality } from "./src/types.js";
 
 const VALID_QUALITIES = new Set<ManimQuality>(["low", "medium", "high", "fourk"]);
@@ -14,25 +15,12 @@ export type CliParseResult =
 			options: GenerateOptions;
 	  };
 
-type GenerateVideoFn = (prompt: string, options?: GenerateOptions) => Promise<GenerateResult>;
-
-interface CliDependencies {
-	generateVideo?: GenerateVideoFn;
-	stdout?: (line: string) => void;
-	stderr?: (line: string) => void;
-}
-
 function getFlagValue(args: string[], index: number, flag: string): string {
 	const value = args[index + 1];
 	if (!value || value.startsWith("--")) {
 		throw new Error(`Missing value for "${flag}"`);
 	}
 	return value;
-}
-
-async function loadGenerateVideo(): Promise<GenerateVideoFn> {
-	const module = await import(new URL("./index.js", import.meta.url).href);
-	return module.generateVideo as GenerateVideoFn;
 }
 
 export function printHelp(): string {
@@ -111,37 +99,31 @@ export function parseCliArgs(args: string[]): CliParseResult {
 	return { prompt, options };
 }
 
-export async function runCli(argv: string[], dependencies: CliDependencies = {}): Promise<number> {
-	const stdout = dependencies.stdout ?? console.log;
-	const stderr = dependencies.stderr ?? console.error;
-
+export async function runCli(argv: string[]): Promise<number> {
 	try {
 		const parsed = parseCliArgs(argv);
 		if ("help" in parsed) {
-			stdout(printHelp());
+			console.log(printHelp());
 			return 0;
 		}
+		console.log(`[eureka] Prompt: ${parsed.prompt}`);
+		console.log("[eureka] Generating video...");
 
-		const runGenerateVideo = dependencies.generateVideo ?? (await loadGenerateVideo());
+		const result = await generateVideo(parsed.prompt, parsed.options);
 
-		stdout(`[eureka] Prompt: ${parsed.prompt}`);
-		stdout("[eureka] Generating video...");
-
-		const result = await runGenerateVideo(parsed.prompt, parsed.options);
-
-		stdout(`[eureka] Video: ${result.videoPath}`);
-		stdout(`[eureka] Scene: ${result.sceneName}`);
-		stdout(`[eureka] Generate: ${result.generateDurationMs}ms`);
-		stdout(`[eureka] Render: ${result.renderDurationMs}ms`);
+		console.log(`[eureka] Video: ${result.videoPath}`);
+		console.log(`[eureka] Scene: ${result.sceneName}`);
+		console.log(`[eureka] Generate: ${result.generateDurationMs}ms`);
+		console.log(`[eureka] Render: ${result.renderDurationMs}ms`);
 
 		if (result.artifactsDir) {
-			stdout(`[eureka] Artifacts: ${result.artifactsDir}`);
+			console.log(`[eureka] Artifacts: ${result.artifactsDir}`);
 		}
 
 		return 0;
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		stderr(`[eureka] Error: ${message}`);
+		console.error(`[eureka] Error: ${message}`);
 		return 1;
 	}
 }

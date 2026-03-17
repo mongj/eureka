@@ -9120,7 +9120,7 @@ export const MODELS = {
 			api: "openai-completions",
 			provider: "openrouter",
 			baseUrl: "https://openrouter.ai/api/v1",
-			reasoning: false,
+			reasoning: true,
 			input: ["text", "image"],
 			cost: {
 				input: 15,
@@ -9188,7 +9188,7 @@ export const MODELS = {
 			api: "openai-completions",
 			provider: "openrouter",
 			baseUrl: "https://openrouter.ai/api/v1",
-			reasoning: false,
+			reasoning: true,
 			input: ["text"],
 			cost: {
 				input: 1.1,

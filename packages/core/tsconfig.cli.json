@@ -4,6 +4,6 @@
 		"outDir": "./dist",
 		"rootDir": "."
 	},
-	"include": ["cli.ts"],
+	"include": ["cli.ts", "src/**/*.ts"],
 	"exclude": ["node_modules", "dist", "test"]
 }
