@@ -71,13 +71,13 @@ export async function generateManimCode(
 
 	const result = await complete(model, {
 		systemPrompt: MANIM_SYSTEM_PROMPT,
-		messages: [{ role: "user", content: prompt }],
+		messages: [{ role: "user", content: prompt, timestamp: Date.now() }],
 	});
 
 	// Extract the text content from the AssistantMessage response
 	const rawResponse = result.content
-		.filter((c: { type: string }) => c.type === "text")
-		.map((c: { type: string; text: string }) => c.text)
+		.filter((c) => c.type === "text")
+		.map((c) => ("text" in c ? c.text : ""))
 		.join("\n");
 
 	console.log("[eureka] Generated code:\n", rawResponse);
