@@ -1,3 +1,24 @@
-pnpm format
-pnpm lint --fix
-git add -A
+staged_files="$(mktemp)"
+ox_files="$(mktemp)"
+git diff --cached --name-only --diff-filter=ACMR -z > "$staged_files"
+trap 'rm -f "$staged_files" "$ox_files"' EXIT
+
+if [ ! -s "$staged_files" ]; then
+	exit 0
+fi
+
+while IFS= read -r -d '' file; do
+	case "$file" in
+		*.js|*.jsx|*.mjs|*.cjs|*.ts|*.tsx|*.mts|*.cts)
+			printf '%s\0' "$file" >> "$ox_files"
+			;;
+	esac
+done < "$staged_files"
+
+if [ ! -s "$ox_files" ]; then
+	exit 0
+fi
+
+xargs -0 pnpm format < "$ox_files"
+xargs -0 pnpm lint --fix < "$ox_files"
+xargs -0 git add -- < "$ox_files"
