@@ -20,7 +20,8 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 	const writeFileTool: AgentTool<any> = {
 		name: "write_file",
 		label: "Write File",
-		description: "Write content to a file in the working directory. Creates parent directories if needed. Use this to write your manim scene code to a .py file.",
+		description:
+			"Write content to a file in the working directory. Creates parent directories if needed. Use this to write your manim scene code to a .py file.",
 		parameters: Type.Object({
 			path: Type.String({ description: "Relative file path within the working directory (e.g., 'scene.py')" }),
 			content: Type.String({ description: "The full file content to write" }),
@@ -59,7 +60,9 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 		label: "List Files",
 		description: "List files in a directory within the working directory.",
 		parameters: Type.Object({
-			path: Type.Optional(Type.String({ description: "Relative directory path. Defaults to root of working directory." })),
+			path: Type.Optional(
+				Type.String({ description: "Relative directory path. Defaults to root of working directory." }),
+			),
 		}),
 		execute: async (_toolCallId, params): Promise<AgentToolResult<{ files: string[] }>> => {
 			const dirPath = resolveSafe(params.path || ".");
