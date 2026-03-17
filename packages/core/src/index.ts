@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
+import { checkAllDependencies } from "./dependencies.js";
 import { generateManimCode } from "./generate.js";
 import { renderManimScene } from "./render.js";
-import { checkAllDependencies } from "./dependencies.js";
 import { type GenerateOptions, type GenerateResult } from "./types.js";
 
 /**
@@ -68,19 +68,21 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 }
 
 // Re-export types and utilities for consumers
+export { configure, getConfig } from "./config.js";
+export type { CoreConfig, ModelTask } from "./config.js";
+export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from "./dependencies.js";
 export { extractManimCode } from "./generate.js";
-export { extractSceneName, renderManimScene } from "./render.js";
-export { checkAllDependencies, checkManimInstalled, checkFfmpegInstalled } from "./dependencies.js";
-export { createScopedTools } from "./tools.js";
 export { MANIM_SYSTEM_PROMPT } from "./prompts.js";
+export { extractSceneName, renderManimScene } from "./render.js";
+export { createScopedTools } from "./tools.js";
 export {
-	EurekaError,
-	InvalidPromptError,
-	InvalidModelError,
-	NoCodeGeneratedError,
-	ManimNotFoundError,
 	DependencyError,
+	EurekaError,
+	InvalidModelError,
+	InvalidPromptError,
+	ManimNotFoundError,
+	NoCodeGeneratedError,
 	RenderError,
 	RenderTimeoutError,
 } from "./types.js";
-export type { GenerateOptions, GenerateResult, RenderOptions, ManimQuality } from "./types.js";
+export type { GenerateOptions, GenerateResult, ManimQuality, RenderOptions } from "./types.js";

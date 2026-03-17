@@ -1,12 +1,13 @@
-import { getModel } from "@eureka/ai";
-import { Agent } from "@eureka/agent";
 import type { AgentEvent } from "@eureka/agent";
+import { Agent } from "@eureka/agent";
+import { resolveModelFromString } from "@eureka/ai";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { getConfig } from "./config.js";
 import { MANIM_SYSTEM_PROMPT } from "./prompts.js";
 import { createScopedTools } from "./tools.js";
-import { InvalidPromptError, InvalidModelError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
+import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
 
 /**
  * Extract Manim Python code from an LLM response.
@@ -32,29 +33,6 @@ export function extractManimCode(response: string): string | null {
 	}
 
 	return null;
-}
-
-function getDefaultModel() {
-	return getModel("anthropic", "claude-sonnet-4" as any);
-}
-
-function resolveModel(modelStr?: string) {
-	if (!modelStr) return getDefaultModel();
-
-	const slashIndex = modelStr.indexOf("/");
-	if (slashIndex === -1) {
-		throw new InvalidModelError(
-			modelStr,
-			`Invalid model format: "${modelStr}". Expected "provider/model-id" (e.g., "anthropic/claude-sonnet-4").`,
-		);
-	}
-	const provider = modelStr.slice(0, slashIndex);
-	const modelId = modelStr.slice(slashIndex + 1);
-	try {
-		return getModel(provider as any, modelId as any);
-	} catch (e) {
-		throw new InvalidModelError(modelStr, `Unknown model "${modelStr}": ${(e as Error).message}`);
-	}
 }
 
 const AGENT_SYSTEM_PROMPT = `${MANIM_SYSTEM_PROMPT}
@@ -91,7 +69,9 @@ export async function generateManimCode(
 		throw new InvalidPromptError();
 	}
 
-	const model = resolveModel(options?.model);
+	// Load config
+	const config = getConfig();
+	const model = resolveModelFromString(config.models.generate);
 
 	// Create a scoped working directory for this generation
 	const workDir = await mkdtemp(join(tmpdir(), "eureka-gen-"));
