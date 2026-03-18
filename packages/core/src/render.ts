@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { mkdir, writeFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createLogger } from "@eureka/utils/logger";
@@ -14,6 +14,30 @@ const QUALITY_FLAGS: Record<ManimQuality, string> = {
 };
 
 /**
+ * Patterns in stderr that indicate manim has hit a fatal error.
+ * When detected, we kill the process immediately instead of waiting
+ * for it to exit (manim can hang after printing a traceback).
+ */
+const ERROR_PATTERNS = [
+	"Traceback (most recent call last)",
+	"Error:",
+	"TypeError:",
+	"NameError:",
+	"AttributeError:",
+	"ValueError:",
+	"ImportError:",
+	"ModuleNotFoundError:",
+	"SyntaxError:",
+	"IndentationError:",
+	"KeyError:",
+	"IndexError:",
+	"ZeroDivisionError:",
+	"RuntimeError:",
+	"FileNotFoundError:",
+	"sys.exit(",
+];
+
+/**
  * Extract the first Scene subclass name from Manim Python code.
  * Matches: class Foo(Scene):, class Foo(ThreeDScene):, class Foo(MovingCameraScene):, etc.
  */
@@ -25,8 +49,9 @@ export function extractSceneName(code: string): string | null {
 /**
  * Render Manim Python code into a video file.
  *
- * Writes the code to a temp file, spawns `manim render`, and returns
- * the path to the output video.
+ * Writes the code to a temp file, spawns `manim render`, and streams
+ * stderr to detect errors early. If an error pattern is detected in
+ * stderr, the process is killed immediately (manim can hang after errors).
  */
 export async function renderManimScene(options: RenderOptions): Promise<string> {
 	const { code, sceneName, quality, timeoutMs, workDir, signal } = options;
@@ -43,17 +68,67 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 
 	log.info(`Rendering: manim ${args.join(" ")}`);
 
-	// Spawn manim
 	const videoPath = await new Promise<string>((resolve, reject) => {
-		execFile("manim", args, { timeout: timeoutMs, signal }, async (error, _stdout, stderr) => {
-			if (error) {
-				// Node's execFile sets error.killed=true when the process is killed
-				// by timeout (ETIMEDOUT) or by AbortSignal (ABORT_ERR).
-				if (error.killed) {
-					reject(new RenderTimeoutError(timeoutMs));
-					return;
+		let settled = false;
+		let stderrChunks: string[] = [];
+		let killedByError = false;
+		let killedByTimeout = false;
+
+		const proc = spawn("manim", args, { stdio: ["ignore", "pipe", "pipe"] });
+
+		// Timeout handling
+		const timer = setTimeout(() => {
+			if (!settled) {
+				killedByTimeout = true;
+				proc.kill("SIGKILL");
+			}
+		}, timeoutMs);
+
+		// AbortSignal handling
+		if (signal) {
+			const onAbort = () => {
+				if (!settled) {
+					proc.kill("SIGKILL");
 				}
-				reject(new RenderError(`Manim render failed: ${error.message}`, code, stderr || ""));
+			};
+			signal.addEventListener("abort", onAbort, { once: true });
+			proc.on("close", () => signal.removeEventListener("abort", onAbort));
+		}
+
+		// Stream stderr — detect error patterns and kill early
+		proc.stderr?.on("data", (chunk: Buffer) => {
+			const text = chunk.toString("utf-8");
+			stderrChunks.push(text);
+			log.debug(`manim stderr: ${text.trimEnd()}`);
+
+			// Check for error patterns — if found, kill the process immediately
+			// since manim can hang after printing a traceback
+			if (!killedByError && ERROR_PATTERNS.some((pattern) => text.includes(pattern))) {
+				killedByError = true;
+				log.warn("Detected error in manim output, killing process");
+				proc.kill("SIGKILL");
+			}
+		});
+
+		// Collect stdout (manim logs progress here too)
+		proc.stdout?.on("data", () => {
+			// Discard stdout — we only care about stderr for errors
+		});
+
+		proc.on("close", async (exitCode) => {
+			clearTimeout(timer);
+			if (settled) return;
+			settled = true;
+
+			const stderr = stderrChunks.join("");
+
+			if (killedByTimeout) {
+				reject(new RenderTimeoutError(timeoutMs));
+				return;
+			}
+
+			if (killedByError || (exitCode !== null && exitCode !== 0)) {
+				reject(new RenderError(`Manim render failed (exit code ${exitCode})`, code, stderr));
 				return;
 			}
 
@@ -63,15 +138,22 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 				const videosDir = join(mediaDir, "videos", "scene");
 				const qualityDirs = await readdir(videosDir);
 				if (qualityDirs.length === 0) {
-					reject(new RenderError("No output directory found after render", code, stderr || ""));
+					reject(new RenderError("No output directory found after render", code, stderr));
 					return;
 				}
 				const outputDir = join(videosDir, qualityDirs[0]);
 				const mp4Path = join(outputDir, `${sceneName}.mp4`);
 				resolve(mp4Path);
 			} catch (fsError) {
-				reject(new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr || ""));
+				reject(new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr));
 			}
+		});
+
+		proc.on("error", (err) => {
+			clearTimeout(timer);
+			if (settled) return;
+			settled = true;
+			reject(new RenderError(`Failed to spawn manim: ${err.message}`, code, ""));
 		});
 	});
 
