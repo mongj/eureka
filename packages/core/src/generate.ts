@@ -52,7 +52,7 @@ export interface GenerateResult {
  */
 export async function generateManimCode(
 	prompt: string,
-	options?: Pick<GenerateOptions, "model" | "signal">,
+	_options?: Pick<GenerateOptions, "model" | "signal">,
 ): Promise<GenerateResult> {
 	if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
 		throw new InvalidPromptError();
