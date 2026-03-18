@@ -1,16 +1,17 @@
-name: Regenerate Models
+name: Regenerate Model Definitions
 
 on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  regenerate:
+  regenerate-model-definitions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".node-version"
+          node-version: "25.5.0"
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
