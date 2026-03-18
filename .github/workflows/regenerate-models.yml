@@ -16,6 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Switch to update branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          BRANCH=chore/update-models
+          git fetch origin "$BRANCH" || true
+          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+            git switch "$BRANCH"
+            git merge main --no-edit
+          else
+            git switch -c "$BRANCH"
+          fi
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -39,21 +53,9 @@ jobs:
       - name: Commit and push
         if: steps.diff.outputs.changed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          BRANCH=chore/update-models
-          git fetch origin "$BRANCH" || true
-          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
-            git checkout "$BRANCH"
-            git merge main --no-edit
-          else
-            git checkout -b "$BRANCH"
-          fi
-
           git add packages/ai/src/models.generated.ts
           git commit -m "chore(ai): regenerate model definitions"
-          git push -u origin "$BRANCH"
+          git push -u origin chore/update-models
 
       - name: Open PR if none exists
         if: steps.diff.outputs.changed == 'true'
