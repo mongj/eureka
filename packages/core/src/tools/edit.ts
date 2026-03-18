@@ -1,6 +1,7 @@
 import { readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { createLogger } from "@eureka/utils/logger";
 import {
 	detectLineEnding,
 	fuzzyFindText,
@@ -10,6 +11,8 @@ import {
 	restoreLineEndings,
 	stripBom,
 } from "./edit-diff.js";
+
+const log = createLogger("Tools");
 
 const editSchema = Type.Object({
 	path: Type.String({ description: "Relative file path within the working directory" }),
@@ -33,6 +36,9 @@ export function createEditTool(resolveSafe: (p: string) => string): AgentTool<ty
 			"Edit a file by replacing exact text. The old_string must match exactly (including whitespace). Use this for precise, surgical edits.",
 		parameters: editSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<EditToolDetails>> => {
+			log.debug(
+				`edit_file: ${params.path} (old_string: ${params.old_string.length} chars, new_string: ${params.new_string.length} chars)`,
+			);
 			const fullPath = resolveSafe(params.path);
 
 			let rawContent: string;
@@ -91,6 +97,9 @@ export function createEditTool(resolveSafe: (p: string) => string): AgentTool<ty
 
 			const diffResult = generateDiffString(baseContent, newContent);
 
+			log.info(
+				`edit_file: ${params.path} — replaced${matchResult.usedFuzzyMatch ? " (fuzzy match)" : ""} at line ${diffResult.firstChangedLine ?? "?"}`,
+			);
 			return {
 				content: [{ type: "text", text: `Successfully replaced text in ${params.path}.` }],
 				details: { path: fullPath, diff: diffResult.diff, firstChangedLine: diffResult.firstChangedLine },

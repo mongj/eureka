@@ -1,7 +1,10 @@
 import { readFile as fsReadFile } from "node:fs/promises";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { createLogger } from "@eureka/utils/logger";
 import { DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize, type TruncationResult, truncateHead } from "./truncate.js";
+
+const log = createLogger("Tools");
 
 const readSchema = Type.Object({
 	path: Type.String({ description: "Relative file path within the working directory" }),
@@ -21,6 +24,9 @@ export function createReadTool(resolveSafe: (p: string) => string): AgentTool<ty
 		description: `Read the contents of a file in the working directory. Output is truncated to ${DEFAULT_MAX_LINES} lines or ${DEFAULT_MAX_BYTES / 1024}KB (whichever is hit first). Use offset/limit for large files.`,
 		parameters: readSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<ReadToolDetails>> => {
+			log.debug(
+				`read_file: ${params.path}${params.offset ? ` offset=${params.offset}` : ""}${params.limit ? ` limit=${params.limit}` : ""}`,
+			);
 			const fullPath = resolveSafe(params.path);
 
 			let buffer: Buffer;
@@ -84,6 +90,12 @@ export function createReadTool(resolveSafe: (p: string) => string): AgentTool<ty
 				outputText += `\n\n[${remaining} more lines in file. Use offset=${nextOffset} to continue.]`;
 			} else {
 				outputText = truncation.content;
+			}
+
+			if (details.truncation?.truncated) {
+				log.info(`read_file: ${params.path} — truncated (${details.truncation.outputLines}/${totalFileLines} lines)`);
+			} else {
+				log.info(`read_file: ${params.path} — ${totalFileLines} lines`);
 			}
 
 			return {

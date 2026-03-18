@@ -2,8 +2,11 @@ import { readFile as fsReadFile } from "node:fs/promises";
 import { relative } from "node:path";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { createLogger } from "@eureka/utils/logger";
 import { truncateHead, truncateLine } from "./truncate.js";
 import { walkFiles } from "./walk.js";
+
+const log = createLogger("Tools");
 
 const DEFAULT_LIMIT = 100;
 
@@ -26,6 +29,7 @@ export function createSearchTool(workDir: string, resolveSafe: (p: string) => st
 		description: `Search file contents using a regex pattern. Returns matching lines with file paths and line numbers. Truncated to ${DEFAULT_LIMIT} matches.`,
 		parameters: searchSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<SearchToolDetails>> => {
+			log.debug(`search_files: pattern="${params.pattern}"${params.path ? ` path=${params.path}` : ""}`);
 			let regex: RegExp;
 			try {
 				regex = new RegExp(params.pattern);
@@ -88,6 +92,7 @@ export function createSearchTool(workDir: string, resolveSafe: (p: string) => st
 				output += `\n\n[${notices.join(". ")}]`;
 			}
 
+			log.info(`search_files: pattern="${params.pattern}" — ${matches.length} matches`);
 			return {
 				content: [{ type: "text", text: output }],
 				details: { matches },

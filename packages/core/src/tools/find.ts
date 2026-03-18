@@ -1,8 +1,11 @@
 import { relative } from "node:path";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { createLogger } from "@eureka/utils/logger";
 import { truncateHead } from "./truncate.js";
 import { walkFiles } from "./walk.js";
+
+const log = createLogger("Tools");
 
 const DEFAULT_LIMIT = 1000;
 
@@ -58,6 +61,7 @@ export function createFindTool(workDir: string, resolveSafe: (p: string) => stri
 		description: `Search for files by glob pattern. Returns matching file paths relative to the working directory. Truncated to ${DEFAULT_LIMIT} results.`,
 		parameters: findSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<FindToolDetails>> => {
+			log.debug(`find_files: pattern="${params.pattern}"${params.path ? ` path=${params.path}` : ""}`);
 			const searchDir = resolveSafe(params.path || ".");
 			const effectiveLimit = params.limit ?? DEFAULT_LIMIT;
 			const regex = globToRegex(params.pattern);
@@ -96,6 +100,7 @@ export function createFindTool(workDir: string, resolveSafe: (p: string) => stri
 				output += `\n\n[${notices.join(". ")}]`;
 			}
 
+			log.info(`find_files: pattern="${params.pattern}" — ${matched.length} files`);
 			return {
 				content: [{ type: "text", text: output }],
 				details: { files: matched },

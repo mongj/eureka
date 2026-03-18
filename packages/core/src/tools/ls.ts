@@ -2,6 +2,9 @@ import { readdir as fsReaddir, stat as fsStat } from "node:fs/promises";
 import { join } from "node:path";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { createLogger } from "@eureka/utils/logger";
+
+const log = createLogger("Tools");
 
 const DEFAULT_LIMIT = 500;
 
@@ -20,6 +23,7 @@ export function createLsTool(resolveSafe: (p: string) => string): AgentTool<type
 		description: `List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Truncated to ${DEFAULT_LIMIT} entries.`,
 		parameters: lsSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<LsToolDetails>> => {
+			log.debug(`list_files: ${params.path || "."}`);
 			const dirPath = resolveSafe(params.path || ".");
 
 			let entries: string[];
@@ -69,6 +73,7 @@ export function createLsTool(resolveSafe: (p: string) => string): AgentTool<type
 				output += `\n\n[${DEFAULT_LIMIT} entries limit reached]`;
 			}
 
+			log.info(`list_files: ${params.path || "."} — ${results.length} entries`);
 			return {
 				content: [{ type: "text", text: output }],
 				details: { files: results },
