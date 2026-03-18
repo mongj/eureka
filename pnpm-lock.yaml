@@ -29,6 +29,9 @@ importers:
       '@eureka/ai':
         specifier: workspace:*
         version: link:../ai
+      '@eureka/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@sinclair/typebox':
         specifier: ^0.34.48
         version: 0.34.48
