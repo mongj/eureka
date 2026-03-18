@@ -106,6 +106,9 @@ importers:
       '@eureka/ai':
         specifier: workspace:*
         version: link:../ai
+      '@eureka/utils':
+        specifier: workspace:*
+        version: link:../utils
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1

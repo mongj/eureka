@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@eureka/agent": "workspace:*",
 		"@eureka/ai": "workspace:*",
+		"@eureka/utils": "workspace:*",
 		"dotenv": "^16.4.7"
 	},
 	"devDependencies": {

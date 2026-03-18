@@ -101,6 +101,23 @@ describe("createLogger", () => {
 		}
 	});
 
+	it("disables color when NO_COLOR is set", () => {
+		const origNoColor = process.env.NO_COLOR;
+		process.env.NO_COLOR = "1";
+		const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const log = createLogger("Test", { level: "debug" });
+		log.info("no color");
+		const output = spy.mock.calls[0][0];
+		expect(output).not.toMatch(/\x1b\[/);
+		expect(output).toContain("[Test]");
+		spy.mockRestore();
+		if (origNoColor === undefined) {
+			delete process.env.NO_COLOR;
+		} else {
+			process.env.NO_COLOR = origNoColor;
+		}
+	});
+
 	it("uses debug level as default in development", () => {
 		const origNode = process.env.NODE_ENV;
 		delete process.env.NODE_ENV;
