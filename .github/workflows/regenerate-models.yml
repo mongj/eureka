@@ -15,20 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Switch to update branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          BRANCH=chore/update-models
-          git fetch origin "$BRANCH" || true
-          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
-            git switch "$BRANCH"
-            git merge main --no-edit
-          else
-            git switch -c "$BRANCH"
-          fi
+          git switch -c chore/update-models
 
       - uses: pnpm/action-setup@v4
 
@@ -55,7 +50,7 @@ jobs:
         run: |
           git add packages/ai/src/models.generated.ts
           git commit -m "chore(ai): regenerate model definitions"
-          git push -u origin chore/update-models
+          git push -f origin chore/update-models
 
       - name: Open PR if none exists
         if: steps.diff.outputs.changed == 'true'
