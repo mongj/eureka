@@ -15,10 +15,22 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 	function resolveSafe(filePath: string): string {
 		const resolved = resolve(workDir, filePath);
 		const rel = relative(workDir, resolved);
-		if (rel.startsWith("..") || resolve(resolved) !== resolved.replace(/\/$/, "")) {
+		if (rel.startsWith("..")) {
 			throw new Error(`Path "${filePath}" escapes the working directory`);
 		}
 		return resolved;
+	}
+
+	async function walkFiles(dir: string, onFile: (fullPath: string) => Promise<void>): Promise<void> {
+		const entries = await readdir(dir, { withFileTypes: true });
+		for (const entry of entries) {
+			const fullPath = join(dir, entry.name);
+			if (entry.isDirectory()) {
+				await walkFiles(fullPath, onFile);
+			} else if (entry.isFile()) {
+				await onFile(fullPath);
+			}
+		}
 	}
 
 	const writeFileTool: AgentTool<any> = {
@@ -200,32 +212,22 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 			const searchDir = resolveSafe(params.path || ".");
 			const matches: Array<{ file: string; line: number; text: string }> = [];
 
-			async function searchRecursive(dir: string): Promise<void> {
-				const entries = await readdir(dir, { withFileTypes: true });
-				for (const entry of entries) {
-					const fullPath = join(dir, entry.name);
-					if (entry.isDirectory()) {
-						await searchRecursive(fullPath);
-					} else if (entry.isFile()) {
-						try {
-							const content = await readFile(fullPath, "utf-8");
-							// Skip likely binary files (contains null bytes)
-							if (content.includes("\0")) continue;
-							const lines = content.split("\n");
-							for (let i = 0; i < lines.length; i++) {
-								if (regex.test(lines[i])) {
-									const relPath = relative(workDir, fullPath);
-									matches.push({ file: relPath, line: i + 1, text: lines[i] });
-								}
-							}
-						} catch {
-							// Skip files that can't be read
+			await walkFiles(searchDir, async (fullPath) => {
+				if (matches.length >= MAX_SEARCH_RESULTS) return;
+				try {
+					const content = await readFile(fullPath, "utf-8");
+					if (content.includes("\0")) return; // skip binary
+					const lines = content.split("\n");
+					for (let i = 0; i < lines.length; i++) {
+						if (regex.test(lines[i])) {
+							matches.push({ file: relative(workDir, fullPath), line: i + 1, text: lines[i] });
+							if (matches.length >= MAX_SEARCH_RESULTS) return;
 						}
 					}
+				} catch {
+					// Skip files that can't be read
 				}
-			}
-
-			await searchRecursive(searchDir);
+			});
 
 			if (matches.length === 0) {
 				return {
@@ -234,15 +236,14 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 				};
 			}
 
-			const truncated = matches.length > MAX_SEARCH_RESULTS;
-			const shown = truncated ? matches.slice(0, MAX_SEARCH_RESULTS) : matches;
-			let output = shown.map((m) => `${m.file}:${m.line}: ${m.text}`).join("\n");
+			const truncated = matches.length >= MAX_SEARCH_RESULTS;
+			let output = matches.map((m) => `${m.file}:${m.line}: ${m.text}`).join("\n");
 			if (truncated) {
-				output += `\n\n(showing first ${MAX_SEARCH_RESULTS} of ${matches.length} matches)`;
+				output += `\n\n(results capped at ${MAX_SEARCH_RESULTS} matches)`;
 			}
 			return {
 				content: [{ type: "text", text: output }],
-				details: { matches: shown },
+				details: { matches },
 			};
 		},
 	};
@@ -260,24 +261,6 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 		}),
 		execute: async (_toolCallId, params): Promise<AgentToolResult<{ files: string[] }>> => {
 			const searchDir = resolveSafe(params.path || ".");
-			const collected: Array<{ relToSearch: string; relToWork: string }> = [];
-
-			async function collectFiles(dir: string): Promise<void> {
-				const entries = await readdir(dir, { withFileTypes: true });
-				for (const entry of entries) {
-					const fullPath = join(dir, entry.name);
-					if (entry.isDirectory()) {
-						await collectFiles(fullPath);
-					} else {
-						collected.push({
-							relToSearch: relative(searchDir, fullPath),
-							relToWork: relative(workDir, fullPath),
-						});
-					}
-				}
-			}
-
-			await collectFiles(searchDir);
 
 			// Simple glob matching: convert glob to regex
 			function globToRegex(glob: string): RegExp {
@@ -310,8 +293,14 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 			}
 
 			const regex = globToRegex(params.pattern);
-			// Match against path relative to search dir, but output path relative to workDir
-			const matched = collected.filter((f) => regex.test(f.relToSearch)).map((f) => f.relToWork);
+			const matched: string[] = [];
+
+			await walkFiles(searchDir, async (fullPath) => {
+				const relToSearch = relative(searchDir, fullPath);
+				if (regex.test(relToSearch)) {
+					matched.push(relative(workDir, fullPath));
+				}
+			});
 
 			if (matched.length === 0) {
 				return {

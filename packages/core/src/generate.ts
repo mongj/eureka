@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
 import { AGENT_SYSTEM_PROMPT } from "./prompts.js";
+import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools.js";
 import { createLogger } from "@eureka/utils/logger";
 import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
@@ -78,7 +79,6 @@ export async function generateManimCode(
 
 		// Track the file path written by the agent via tool execution events
 		let writtenPath: string | null = null;
-		let writtenCode: string | null = null;
 
 		agent.subscribe((event: AgentEvent) => {
 			if (event.type === "tool_execution_end" && event.toolName === "write_file" && !event.isError) {
@@ -114,12 +114,11 @@ export async function generateManimCode(
 		}
 
 		// Read back the written file to get the code
-		writtenCode = await readFile(writtenPath, "utf-8");
+		const writtenCode = await readFile(writtenPath, "utf-8");
 
 		log.info("Agent wrote scene to: " + writtenPath);
 		log.debug("Generated code:\n" + writtenCode);
 
-		const { extractSceneName } = await import("./render.js");
 		const sceneName = extractSceneName(writtenCode);
 		if (!sceneName) {
 			throw new NoCodeGeneratedError(writtenCode);
