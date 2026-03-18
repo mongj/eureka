@@ -43,7 +43,7 @@
 	"scripts": {
 		"clean": "rm -rf dist",
 		"generate-models": "npx tsx scripts/generate-models.ts && pnpm -w format",
-		"build": "pnpm generate-models && tsc -p tsconfig.build.json",
+		"build": "tsc -p tsconfig.build.json",
 		"dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
 		"dev:tsc": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
 		"test": "vitest --run",
