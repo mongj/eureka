@@ -2,7 +2,6 @@ import { rm } from "node:fs/promises";
 import { createLogger } from "@eureka/utils/logger";
 import { checkAllDependencies } from "./dependencies.js";
 import { generateManimCode } from "./generate.js";
-import { renderManimScene } from "./render.js";
 import { type GenerateOptions, type GenerateResult } from "./types.js";
 
 const log = createLogger("Core");
@@ -10,7 +9,7 @@ const log = createLogger("Core");
 /**
  * Generate an educational math video from a natural language prompt.
  *
- * Pipeline: prompt → Agent generates Manim code (writes scene.py to /tmp) → render to MP4 video.
+ * Pipeline: prompt → Agent generates Manim code → agent renders to MP4 → self-corrects on failure.
  *
  * @example
  * ```ts
@@ -22,38 +21,31 @@ const log = createLogger("Core");
  * ```
  */
 export async function generateVideo(prompt: string, options: GenerateOptions = {}): Promise<GenerateResult> {
-	const { quality = "low", renderTimeoutMs = 120_000, keepArtifacts = false, signal } = options;
+	const { quality = "low", renderTimeoutMs = 120_000, maxRenderAttempts = 3, keepArtifacts = false, signal } = options;
 
 	// Check dependencies first
 	await checkAllDependencies();
 
-	// Generate code via agent — writes scene.py to a temp dir
-	const genStart = Date.now();
-	const { code, sceneName, workDir } = await generateManimCode(prompt, { model: options.model, signal });
-	const generateDurationMs = Date.now() - genStart;
-
-	// Use the agent's workDir for rendering (scene.py is already there)
-	const renderWorkDir = options.tmpDir ?? workDir;
-
-	try {
-		// Render
-		const renderStart = Date.now();
-		const videoPath = await renderManimScene({
-			code,
-			sceneName,
+	// Generate code and render via agent — the agent writes scene.py, calls render_video,
+	// and self-corrects on render failures up to maxRenderAttempts.
+	const start = Date.now();
+	const { code, sceneName, workDir, videoPath } = await generateManimCode(prompt, {
+		model: options.model,
+		signal,
+		render: {
 			quality,
 			timeoutMs: renderTimeoutMs,
-			workDir: renderWorkDir,
-			signal,
-		});
-		const renderDurationMs = Date.now() - renderStart;
+			maxAttempts: maxRenderAttempts,
+		},
+	});
+	const durationMs = Date.now() - start;
 
+	try {
 		const result: GenerateResult = {
 			videoPath,
 			code,
 			sceneName,
-			generateDurationMs,
-			renderDurationMs,
+			durationMs,
 		};
 
 		if (keepArtifacts) {
@@ -77,6 +69,7 @@ export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from 
 export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT } from "./prompts.js";
 export { extractSceneName, renderManimScene } from "./render.js";
 export { createScopedTools } from "./tools/index.js";
+export type { RenderToolConfig, RenderToolDetails } from "./tools/render.js";
 export {
 	DependencyError,
 	EurekaError,

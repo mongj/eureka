@@ -28,14 +28,13 @@ describe("generateVideo (E2E)", () => {
 			expect(result.videoPath).toContain(".mp4");
 			expect(result.code).toContain("from manim import");
 			expect(result.sceneName).toBeTruthy();
-			expect(result.generateDurationMs).toBeGreaterThan(0);
-			expect(result.renderDurationMs).toBeGreaterThan(0);
+			expect(result.durationMs).toBeGreaterThan(0);
 
-			await access(result.videoPath);
+			await access(result.videoPath!);
 
 			console.log(`[E2E] Video generated at: ${result.videoPath}`);
 			console.log(`[E2E] Scene: ${result.sceneName}`);
-			console.log(`[E2E] Generate: ${result.generateDurationMs}ms, Render: ${result.renderDurationMs}ms`);
+			console.log(`[E2E] Duration: ${result.durationMs}ms`);
 		},
 		180_000,
 	);

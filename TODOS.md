@@ -7,7 +7,7 @@
 **Why:** LLM-generated manim code fails ~30-50% on first attempt due to API misuse, import errors, or animation timing issues. An error-feedback loop would dramatically improve success rate.
 **Effort:** M
 **Depends on:** Core pipeline (prompt → code → video) must be working first.
-**Status:** Tools prerequisite met — agent now has edit_file, read_file, search_files tools. Ready for implementation.
+**Status:** In progress — render_video tool added to agent loop, self-correcting on failures with configurable max attempts.
 
 ## P2 — Medium Priority
 

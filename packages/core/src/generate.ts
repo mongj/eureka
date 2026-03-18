@@ -9,8 +9,9 @@ import { getConfig } from "./config.js";
 import { AGENT_SYSTEM_PROMPT } from "./prompts.js";
 import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools/index.js";
+import type { RenderToolConfig } from "./tools/render.js";
 import { createLogger } from "@eureka/utils/logger";
-import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
+import { InvalidPromptError, NoCodeGeneratedError, type ManimQuality } from "./types.js";
 
 const log = createLogger("Generate");
 
@@ -35,6 +36,16 @@ export async function copyWorkspaceTemplate(workDir: string): Promise<void> {
 	log.info("Copied workspace template to: " + workDir);
 }
 
+export interface GenerateOptions {
+	model?: string;
+	signal?: AbortSignal;
+	render?: {
+		quality: ManimQuality;
+		timeoutMs: number;
+		maxAttempts: number;
+	};
+}
+
 export interface GenerateResult {
 	/** Absolute path to the generated .py file */
 	scenePath: string;
@@ -44,6 +55,8 @@ export interface GenerateResult {
 	sceneName: string;
 	/** Path to the working directory containing the scene file */
 	workDir: string;
+	/** Absolute path to the rendered video (only present when render config was provided and succeeded) */
+	videoPath?: string;
 }
 
 /**
@@ -53,10 +66,7 @@ export interface GenerateResult {
  * It writes the generated scene.py file using the write_file tool.
  * Returns the path to the written file.
  */
-export async function generateManimCode(
-	prompt: string,
-	_options?: Pick<GenerateOptions, "model" | "signal">,
-): Promise<GenerateResult> {
+export async function generateManimCode(prompt: string, options?: GenerateOptions): Promise<GenerateResult> {
 	if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
 		throw new InvalidPromptError();
 	}
@@ -65,11 +75,22 @@ export async function generateManimCode(
 	const config = getConfig();
 	const model = resolveModelFromString(config.models.generate);
 
+	// Build render tool config if rendering is requested
+	let renderToolConfig: RenderToolConfig | undefined;
+	if (options?.render) {
+		renderToolConfig = {
+			quality: options.render.quality,
+			timeoutMs: options.render.timeoutMs,
+			maxAttempts: options.render.maxAttempts,
+			signal: options?.signal,
+		};
+	}
+
 	// Create a scoped working directory for this generation
 	const workDir = await mkdtemp(join(tmpdir(), "eureka-gen-"));
 	try {
 		await copyWorkspaceTemplate(workDir);
-		const tools = createScopedTools(workDir);
+		const tools = createScopedTools(workDir, renderToolConfig ? { render: renderToolConfig } : undefined);
 
 		const agent = new Agent({
 			initialState: {
@@ -81,12 +102,16 @@ export async function generateManimCode(
 
 		// Track the file path written by the agent via tool execution events
 		let writtenPath: string | null = null;
+		let videoPath: string | null = null;
 
 		agent.subscribe((event: AgentEvent) => {
-			if (event.type === "tool_execution_end" && event.toolName === "write_file" && !event.isError) {
+			if (event.type === "tool_execution_end" && !event.isError) {
 				const details = event.result?.details;
-				if (details?.path) {
+				if (event.toolName === "write_file" && details?.path) {
 					writtenPath = details.path;
+				}
+				if (event.toolName === "render_video" && details?.videoPath) {
+					videoPath = details.videoPath;
 				}
 			}
 			// Log assistant messages for debugging
@@ -126,12 +151,18 @@ export async function generateManimCode(
 			throw new NoCodeGeneratedError(writtenCode);
 		}
 
-		return {
+		const result: GenerateResult = {
 			scenePath: writtenPath,
 			code: writtenCode,
 			sceneName,
 			workDir,
 		};
+
+		if (videoPath) {
+			result.videoPath = videoPath;
+		}
+
+		return result;
 	} catch (error) {
 		await rm(workDir, { recursive: true, force: true }).catch(() => {
 			log.warn(`Failed to clean up temp dir after generation error: ${workDir}`);
