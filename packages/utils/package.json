@@ -1,0 +1,31 @@
+{
+	"name": "@eureka/utils",
+	"version": "0.0.1",
+	"packageManager": "pnpm@10.28.1",
+	"description": "Shared utilities for Eureka packages",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		"./logger": {
+			"types": "./dist/logger.d.ts",
+			"import": "./dist/logger.js"
+		}
+	},
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+		"test": "vitest --run"
+	},
+	"dependencies": {
+		"chalk": "^5.6.2"
+	},
+	"devDependencies": {
+		"@types/node": "^25.5.0",
+		"typescript": "^5.7.3",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}

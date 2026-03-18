@@ -105,15 +105,15 @@ describe("runCli", () => {
 
 		expect(exitCode).toBe(0);
 		expect(errorSpy).not.toHaveBeenCalled();
-		expect(logSpy.mock.calls.map(([line]) => line)).toEqual([
-			"[eureka] Prompt: show a circle",
-			"[eureka] Generating video...",
-			"[eureka] Video: /tmp/demo.mp4",
-			"[eureka] Scene: DemoScene",
-			"[eureka] Generate: 1234ms",
-			"[eureka] Render: 5678ms",
-			"[eureka] Artifacts: /tmp/eureka-demo",
-		]);
+		const logged = logSpy.mock.calls.map(([line]) => line);
+		expect(logged).toHaveLength(7);
+		expect(logged[0]).toContain("Prompt: show a circle");
+		expect(logged[1]).toContain("Generating video...");
+		expect(logged[2]).toContain("Video: /tmp/demo.mp4");
+		expect(logged[3]).toContain("Scene: DemoScene");
+		expect(logged[4]).toContain("Generate: 1234ms");
+		expect(logged[5]).toContain("Render: 5678ms");
+		expect(logged[6]).toContain("Artifacts: /tmp/eureka-demo");
 
 		logSpy.mockRestore();
 		errorSpy.mockRestore();
@@ -145,8 +145,8 @@ describe("runCli", () => {
 		const exitCode = await runCli(["show a circle"]);
 
 		expect(exitCode).toBe(1);
-		expect(logSpy).toHaveBeenCalledWith("[eureka] Prompt: show a circle");
-		expect(errorSpy).toHaveBeenCalledWith("[eureka] Error: boom");
+		expect(logSpy.mock.calls[0][0]).toContain("Prompt: show a circle");
+		expect(errorSpy.mock.calls[0][0]).toContain("boom");
 
 		logSpy.mockRestore();
 		errorSpy.mockRestore();

@@ -1,6 +1,7 @@
 {
 	"name": "@eureka/agent",
 	"version": "0.58.4",
+	"packageManager": "pnpm@10.28.1",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"keywords": [
 		"agent",
@@ -27,6 +28,7 @@
 	},
 	"dependencies": {
 		"@eureka/ai": "workspace:*",
+		"@eureka/utils": "workspace:*",
 		"@sinclair/typebox": "^0.34.48"
 	},
 	"devDependencies": {

@@ -7,7 +7,10 @@ import { join } from "node:path";
 import { getConfig } from "./config.js";
 import { MANIM_SYSTEM_PROMPT } from "./prompts.js";
 import { createScopedTools } from "./tools.js";
+import { createLogger } from "@eureka/utils/logger";
 import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
+
+const log = createLogger("Generate");
 
 /**
  * Extract Manim Python code from an LLM response.
@@ -104,7 +107,7 @@ export async function generateManimCode(
 					?.map((c: any) => c.text)
 					?.join("\n");
 				if (texts) {
-					console.log("[eureka] Agent response:", texts.substring(0, 200));
+					log.debug("Agent response: " + texts.substring(0, 200));
 				}
 			}
 		});
@@ -135,7 +138,7 @@ export async function generateManimCode(
 						const { writeFile } = await import("node:fs/promises");
 						const scenePath = join(workDir, "scene.py");
 						await writeFile(scenePath, extracted, "utf-8");
-						console.log("[eureka] Agent did not use write_file tool, extracted code from response");
+						log.warn("Agent did not use write_file tool, extracted code from response");
 
 						const { extractSceneName } = await import("./render.js");
 						const sceneName = extractSceneName(extracted);
@@ -152,8 +155,8 @@ export async function generateManimCode(
 		const { readFile } = await import("node:fs/promises");
 		writtenCode = await readFile(writtenPath, "utf-8");
 
-		console.log("[eureka] Agent wrote scene to:", writtenPath);
-		console.log("[eureka] Generated code:\n", writtenCode);
+		log.info("Agent wrote scene to: " + writtenPath);
+		log.debug("Generated code:\n" + writtenCode);
 
 		const { extractSceneName } = await import("./render.js");
 		const sceneName = extractSceneName(writtenCode);
@@ -169,7 +172,7 @@ export async function generateManimCode(
 		};
 	} catch (error) {
 		await rm(workDir, { recursive: true, force: true }).catch(() => {
-			console.warn(`[eureka] Failed to clean up temp dir after generation error: ${workDir}`);
+			log.warn(`Failed to clean up temp dir after generation error: ${workDir}`);
 		});
 		throw error;
 	}

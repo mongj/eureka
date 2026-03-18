@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import "dotenv/config";
 import { pathToFileURL } from "node:url";
+import { createLogger } from "@eureka/utils/logger";
 import { generateVideo } from "./src/index.js";
 import type { GenerateOptions, ManimQuality } from "./src/types.js";
+
+const log = createLogger("CLI");
 
 const VALID_QUALITIES = new Set<ManimQuality>(["low", "medium", "high", "fourk"]);
 
@@ -106,24 +109,24 @@ export async function runCli(argv: string[]): Promise<number> {
 			console.log(printHelp());
 			return 0;
 		}
-		console.log(`[eureka] Prompt: ${parsed.prompt}`);
-		console.log("[eureka] Generating video...");
+		log.info(`Prompt: ${parsed.prompt}`);
+		log.info("Generating video...");
 
 		const result = await generateVideo(parsed.prompt, parsed.options);
 
-		console.log(`[eureka] Video: ${result.videoPath}`);
-		console.log(`[eureka] Scene: ${result.sceneName}`);
-		console.log(`[eureka] Generate: ${result.generateDurationMs}ms`);
-		console.log(`[eureka] Render: ${result.renderDurationMs}ms`);
+		log.info(`Video: ${result.videoPath}`);
+		log.info(`Scene: ${result.sceneName}`);
+		log.info(`Generate: ${result.generateDurationMs}ms`);
+		log.info(`Render: ${result.renderDurationMs}ms`);
 
 		if (result.artifactsDir) {
-			console.log(`[eureka] Artifacts: ${result.artifactsDir}`);
+			log.info(`Artifacts: ${result.artifactsDir}`);
 		}
 
 		return 0;
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.error(`[eureka] Error: ${message}`);
+		log.error(message);
 		return 1;
 	}
 }

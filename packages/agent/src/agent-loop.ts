@@ -11,6 +11,7 @@ import {
 	type ToolResultMessage,
 	validateToolArguments,
 } from "@eureka/ai";
+import { createLogger } from "@eureka/utils/logger";
 import type {
 	AgentContext,
 	AgentEvent,
@@ -21,6 +22,8 @@ import type {
 	AgentToolResult,
 	StreamFn,
 } from "./types.js";
+
+const log = createLogger("Agent");
 
 export type AgentEventSink = (event: AgentEvent) => Promise<void> | void;
 
@@ -161,6 +164,7 @@ async function runLoop(
 	streamFn?: StreamFn,
 ): Promise<void> {
 	let firstTurn = true;
+	log.debug("Agent loop started");
 	// Check for steering messages at start (user may have typed while waiting)
 	let pendingMessages: AgentMessage[] = (await config.getSteeringMessages?.()) || [];
 
@@ -172,12 +176,14 @@ async function runLoop(
 		while (hasMoreToolCalls || pendingMessages.length > 0) {
 			if (!firstTurn) {
 				await emit({ type: "turn_start" });
+				log.debug("Turn started");
 			} else {
 				firstTurn = false;
 			}
 
 			// Process pending messages (inject before next assistant response)
 			if (pendingMessages.length > 0) {
+				const count = pendingMessages.length;
 				for (const message of pendingMessages) {
 					await emit({ type: "message_start", message });
 					await emit({ type: "message_end", message });
@@ -185,13 +191,16 @@ async function runLoop(
 					newMessages.push(message);
 				}
 				pendingMessages = [];
+				log.debug(`Injected ${count} steering message(s)`);
 			}
 
 			// Stream assistant response
 			const message = await streamAssistantResponse(currentContext, config, signal, emit, streamFn);
 			newMessages.push(message);
+			log.debug(`Assistant response received (stopReason: ${message.stopReason})`);
 
 			if (message.stopReason === "error" || message.stopReason === "aborted") {
+				log.warn(`Agent stopped: ${message.stopReason}`);
 				await emit({ type: "turn_end", message, toolResults: [] });
 				await emit({ type: "agent_end", messages: newMessages });
 				return;
@@ -203,6 +212,7 @@ async function runLoop(
 
 			const toolResults: ToolResultMessage[] = [];
 			if (hasMoreToolCalls) {
+				log.info(`Executing ${toolCalls.length} tool call(s): ${toolCalls.map((c) => c.name).join(", ")}`);
 				toolResults.push(...(await executeToolCalls(currentContext, message, config, signal, emit)));
 
 				for (const result of toolResults) {
@@ -219,6 +229,7 @@ async function runLoop(
 		// Agent would stop here. Check for follow-up messages.
 		const followUpMessages = (await config.getFollowUpMessages?.()) || [];
 		if (followUpMessages.length > 0) {
+			log.debug(`Processing ${followUpMessages.length} follow-up message(s)`);
 			// Set as pending so inner loop processes them
 			pendingMessages = followUpMessages;
 			continue;
@@ -228,6 +239,7 @@ async function runLoop(
 		break;
 	}
 
+	log.debug("Agent loop ended");
 	await emit({ type: "agent_end", messages: newMessages });
 }
 
@@ -257,6 +269,8 @@ async function streamAssistantResponse(
 		messages: llmMessages,
 		tools: context.tools,
 	};
+
+	log.debug(`Calling LLM: ${config.model.provider}/${config.model.id} (${llmMessages.length} messages)`);
 
 	const streamFunction = streamFn || streamSimple;
 
@@ -456,6 +470,7 @@ async function prepareToolCall(
 ): Promise<PreparedToolCall | ImmediateToolCallOutcome> {
 	const tool = currentContext.tools?.find((t) => t.name === toolCall.name);
 	if (!tool) {
+		log.warn(`Tool "${toolCall.name}" not found`);
 		return {
 			kind: "immediate",
 			result: createErrorToolResult(`Tool ${toolCall.name} not found`),
@@ -476,6 +491,7 @@ async function prepareToolCall(
 				signal,
 			);
 			if (beforeResult?.block) {
+				log.warn(`Tool "${toolCall.name}" blocked: ${beforeResult.reason || "no reason given"}`);
 				return {
 					kind: "immediate",
 					result: createErrorToolResult(beforeResult.reason || "Tool execution was blocked"),
@@ -503,6 +519,8 @@ async function executePreparedToolCall(
 	signal: AbortSignal | undefined,
 	emit: AgentEventSink,
 ): Promise<ExecutedToolCallOutcome> {
+	const startTime = Date.now();
+	log.debug(`Tool "${prepared.toolCall.name}" executing...`);
 	const updateEvents: Promise<void>[] = [];
 
 	try {
@@ -525,9 +543,11 @@ async function executePreparedToolCall(
 			},
 		);
 		await Promise.all(updateEvents);
+		log.info(`Tool "${prepared.toolCall.name}" completed in ${Date.now() - startTime}ms`);
 		return { result, isError: false };
 	} catch (error) {
 		await Promise.all(updateEvents);
+		log.error(`Tool "${prepared.toolCall.name}" failed: ${error instanceof Error ? error.message : String(error)}`);
 		return {
 			result: createErrorToolResult(error instanceof Error ? error.message : String(error)),
 			isError: true,

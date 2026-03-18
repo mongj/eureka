@@ -10,6 +10,7 @@ media/
 
 # AI Artifacts
 TODOS.md
+CLAUDE.md
 .claude/
 .vscode/
 .cursor/

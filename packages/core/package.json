@@ -1,6 +1,7 @@
 {
 	"name": "@eureka/core",
 	"version": "0.0.1",
+	"packageManager": "pnpm@10.28.1",
 	"bin": {
 		"eureka": "./dist/cli.js"
 	},
@@ -23,6 +24,7 @@
 	"dependencies": {
 		"@eureka/agent": "workspace:*",
 		"@eureka/ai": "workspace:*",
+		"@eureka/utils": "workspace:*",
 		"dotenv": "^16.4.7"
 	},
 	"devDependencies": {
