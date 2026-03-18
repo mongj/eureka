@@ -9,6 +9,7 @@ export const MANIM_SYSTEM_PROMPT = `You are an expert Manim animator. Your job i
 6. Keep animations concise — aim for 5-30 seconds of content
 7. Use \`self.play()\` for animations and \`self.wait()\` for pauses
 8. Add text labels and annotations to make the animation educational
+9. in a raw string r"...", use single slash for LaTeX commands. Only use double backslash if you're in a regular (non-raw) string.
 </rules>
 
 <style_guidelines>
