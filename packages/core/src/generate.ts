@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
 import { AGENT_SYSTEM_PROMPT } from "./prompts.js";
 import { extractSceneName } from "./render.js";
-import { createScopedTools } from "./tools.js";
+import { createScopedTools } from "./tools/index.js";
 import { createLogger } from "@eureka/utils/logger";
 import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
 

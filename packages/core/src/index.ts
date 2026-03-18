@@ -76,7 +76,7 @@ export type { CoreConfig, ModelTask } from "./config.js";
 export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from "./dependencies.js";
 export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT } from "./prompts.js";
 export { extractSceneName, renderManimScene } from "./render.js";
-export { createScopedTools } from "./tools.js";
+export { createScopedTools } from "./tools/index.js";
 export {
 	DependencyError,
 	EurekaError,
