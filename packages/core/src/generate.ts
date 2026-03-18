@@ -20,6 +20,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * Get the absolute path to the agent workspace template directory.
  */
 export function getWorkspaceTemplatePath(): string {
+	// TODO: Upload this template bundle to a CDN on merges to main, then fetch it when
+	// provisioning new sandboxes instead of shipping the folder inside dist.
 	return join(dirname(__dirname), "agent-workspace-template");
 }
 
