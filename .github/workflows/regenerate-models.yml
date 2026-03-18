@@ -26,13 +26,44 @@ jobs:
 
       - run: pnpm --filter @eureka/ai generate-models
 
-      - uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: "chore(ai): regenerate model definitions"
-          branch: chore/update-models
-          title: "chore(ai): regenerate model definitions"
-          body: |
-            Automated daily regeneration of `packages/ai/src/models.generated.ts`.
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet packages/ai/src/models.generated.ts; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
-            This PR was created automatically by the [Regenerate Models](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.
-          delete-branch: true
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          BRANCH=chore/update-models
+          git fetch origin "$BRANCH" || true
+          if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+            git checkout "$BRANCH"
+            git merge main --no-edit
+          else
+            git checkout -b "$BRANCH"
+          fi
+
+          git add packages/ai/src/models.generated.ts
+          git commit -m "chore(ai): regenerate model definitions"
+          git push -u origin "$BRANCH"
+
+      - name: Open PR if none exists
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH=chore/update-models
+          if ! gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' | grep -q .; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "chore(ai): regenerate model definitions" \
+              --body "Automated daily regeneration of \`packages/ai/src/models.generated.ts\`."
+          fi
