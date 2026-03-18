@@ -1,50 +1,36 @@
 import type { AgentEvent } from "@eureka/agent";
 import { Agent } from "@eureka/agent";
 import { resolveModelFromString } from "@eureka/ai";
-import { mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
-import { MANIM_SYSTEM_PROMPT } from "./prompts.js";
+import { AGENT_SYSTEM_PROMPT } from "./prompts.js";
 import { createScopedTools } from "./tools.js";
 import { createLogger } from "@eureka/utils/logger";
 import { InvalidPromptError, NoCodeGeneratedError, type GenerateOptions } from "./types.js";
 
 const log = createLogger("Generate");
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 /**
- * Extract Manim Python code from an LLM response.
- *
- * Tries in order:
- * 1. First ```python ... ``` block
- * 2. First ``` ... ``` block (untagged)
- * 3. Raw response if it contains "from manim import"
- * 4. null if nothing found
+ * Get the absolute path to the agent workspace template directory.
  */
-export function extractManimCode(response: string): string | null {
-	// Try python-tagged code block first
-	const pythonBlock = response.match(/```python\s*\n([\s\S]*?)```/);
-	if (pythonBlock) return pythonBlock[1].trim();
-
-	// Try untagged code block
-	const plainBlock = response.match(/```\s*\n([\s\S]*?)```/);
-	if (plainBlock) return plainBlock[1].trim();
-
-	// Try raw response (LLM sometimes omits the code fence)
-	if (response.includes("from manim import")) {
-		return response.trim();
-	}
-
-	return null;
+export function getWorkspaceTemplatePath(): string {
+	return join(dirname(__dirname), "agent-workspace-template");
 }
 
-const AGENT_SYSTEM_PROMPT = `${MANIM_SYSTEM_PROMPT}
-
-## Important Instructions
-
-You have access to file tools. You MUST use the write_file tool to write your manim scene code to a file named "scene.py" in the working directory. Do NOT just respond with code in a message — you must write it to the file using the tool.
-
-After writing the file, confirm what you wrote by briefly describing the animation.`;
+/**
+ * Copy the workspace template into the agent's working directory.
+ * Uses { force: false, errorOnExist: false } to skip existing files without error.
+ */
+export async function copyWorkspaceTemplate(workDir: string): Promise<void> {
+	const templatePath = getWorkspaceTemplatePath();
+	await cp(templatePath, workDir, { recursive: true, force: false, errorOnExist: false });
+	log.info("Copied workspace template to: " + workDir);
+}
 
 export interface GenerateResult {
 	/** Absolute path to the generated .py file */
@@ -79,6 +65,7 @@ export async function generateManimCode(
 	// Create a scoped working directory for this generation
 	const workDir = await mkdtemp(join(tmpdir(), "eureka-gen-"));
 	try {
+		await copyWorkspaceTemplate(workDir);
 		const tools = createScopedTools(workDir);
 
 		const agent = new Agent({
@@ -123,31 +110,6 @@ export async function generateManimCode(
 
 		// The agent should have written a scene.py file via write_file tool
 		if (!writtenPath) {
-			// Fallback: try to extract code from the agent's text response
-			const messages = agent.state.messages;
-			const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
-			if (lastAssistant && "content" in lastAssistant) {
-				const text = (lastAssistant as any).content
-					?.filter((c: any) => c.type === "text")
-					?.map((c: any) => c.text)
-					?.join("\n");
-				if (text) {
-					const extracted = extractManimCode(text);
-					if (extracted) {
-						// Agent didn't use the tool — write it ourselves
-						const { writeFile } = await import("node:fs/promises");
-						const scenePath = join(workDir, "scene.py");
-						await writeFile(scenePath, extracted, "utf-8");
-						log.warn("Agent did not use write_file tool, extracted code from response");
-
-						const { extractSceneName } = await import("./render.js");
-						const sceneName = extractSceneName(extracted);
-						if (!sceneName) throw new NoCodeGeneratedError(extracted);
-
-						return { scenePath, code: extracted, sceneName, workDir };
-					}
-				}
-			}
 			throw new NoCodeGeneratedError("Agent did not write any file");
 		}
 
