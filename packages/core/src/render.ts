@@ -1,7 +1,10 @@
 import { execFile } from "node:child_process";
 import { mkdir, writeFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { createLogger } from "@eureka/utils/logger";
 import { RenderError, RenderTimeoutError, type RenderOptions, type ManimQuality } from "./types.js";
+
+const log = createLogger("Render");
 
 const QUALITY_FLAGS: Record<ManimQuality, string> = {
 	low: "-ql",
@@ -38,7 +41,7 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 	const mediaDir = join(workDir, "media");
 	const args = ["render", qualityFlag, "--media_dir", mediaDir, sceneFile, sceneName];
 
-	console.log(`[eureka] Rendering: manim ${args.join(" ")}`);
+	log.info(`Rendering: manim ${args.join(" ")}`);
 
 	// Spawn manim
 	const videoPath = await new Promise<string>((resolve, reject) => {

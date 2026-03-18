@@ -3,6 +3,7 @@
  * The server manages auth and proxies requests to LLM providers.
  */
 
+import { createLogger } from "@eureka/utils/logger";
 // Internal import for JSON parsing utility
 import {
 	type AssistantMessage,
@@ -15,6 +16,8 @@ import {
 	type StopReason,
 	type ToolCall,
 } from "@eureka/ai";
+
+const log = createLogger("Agent");
 
 // Create stream class matching ProxyMessageEventStream
 class ProxyMessageEventStream extends EventStream<AssistantMessageEvent, AssistantMessage> {
@@ -333,7 +336,7 @@ function processProxyEvent(
 
 		default: {
 			const _exhaustiveCheck: never = proxyEvent;
-			console.warn(`Unhandled proxy event type: ${(proxyEvent as any).type}`);
+			log.warn(`Unhandled proxy event type: ${(proxyEvent as any).type}`);
 			return undefined;
 		}
 	}

@@ -1,8 +1,11 @@
 import { rm } from "node:fs/promises";
+import { createLogger } from "@eureka/utils/logger";
 import { checkAllDependencies } from "./dependencies.js";
 import { generateManimCode } from "./generate.js";
 import { renderManimScene } from "./render.js";
 import { type GenerateOptions, type GenerateResult } from "./types.js";
+
+const log = createLogger("Core");
 
 /**
  * Generate an educational math video from a natural language prompt.
@@ -61,7 +64,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 	} finally {
 		if (!keepArtifacts) {
 			await rm(workDir, { recursive: true, force: true }).catch(() => {
-				console.warn(`[eureka] Failed to clean up temp dir: ${workDir}`);
+				log.warn(`Failed to clean up temp dir: ${workDir}`);
 			});
 		}
 	}

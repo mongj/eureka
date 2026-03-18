@@ -29,6 +29,9 @@ importers:
       '@eureka/ai':
         specifier: workspace:*
         version: link:../ai
+      '@eureka/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@sinclair/typebox':
         specifier: ^0.34.48
         version: 0.34.48
@@ -106,9 +109,28 @@ importers:
       '@eureka/ai':
         specifier: workspace:*
         version: link:../ai
+      '@eureka/utils':
+        specifier: workspace:*
+        version: link:../utils
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@25.5.0)
+
+  packages/utils:
+    dependencies:
+      chalk:
+        specifier: ^5.6.2
+        version: 5.6.2
     devDependencies:
       '@types/node':
         specifier: ^25.5.0

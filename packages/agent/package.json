@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@eureka/ai": "workspace:*",
+		"@eureka/utils": "workspace:*",
 		"@sinclair/typebox": "^0.34.48"
 	},
 	"devDependencies": {
