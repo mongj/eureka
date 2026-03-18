@@ -1,0 +1,38 @@
+name: Regenerate Models
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @eureka/ai generate-models
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore(ai): regenerate model definitions"
+          branch: chore/update-models
+          title: "chore(ai): regenerate model definitions"
+          body: |
+            Automated daily regeneration of `packages/ai/src/models.generated.ts`.
+
+            This PR was created automatically by the [Regenerate Models](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.
+          delete-branch: true
