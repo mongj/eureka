@@ -4,7 +4,6 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
-  pull_request:
 
 permissions:
   contents: write
@@ -15,15 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Switch to update branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git switch -c chore/update-models
+          git switch -c actions/chore/update-model-definitions
 
       - uses: pnpm/action-setup@v5
 
@@ -50,14 +47,14 @@ jobs:
         run: |
           git add packages/ai/src/models.generated.ts
           git commit -m "chore(ai): regenerate model definitions"
-          git push -f origin chore/update-models
+          git push -f origin actions/chore/update-model-definitions
 
       - name: Open PR if none exists
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          BRANCH=chore/update-models
+          BRANCH=actions/chore/update-model-definitions
           if ! gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' | grep -q .; then
             gh pr create \
               --base main \
