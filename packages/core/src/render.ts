@@ -95,14 +95,11 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 			proc.on("close", () => signal.removeEventListener("abort", onAbort));
 		}
 
-		// Stream stderr — detect error patterns and kill early
+		// Stream stderr — collect for error reporting and detect error patterns to kill early
 		proc.stderr?.on("data", (chunk: Buffer) => {
 			const text = chunk.toString("utf-8");
 			stderrChunks.push(text);
-			log.debug(`manim stderr: ${text.trimEnd()}`);
 
-			// Check for error patterns — if found, kill the process immediately
-			// since manim can hang after printing a traceback
 			if (!killedByError && ERROR_PATTERNS.some((pattern) => text.includes(pattern))) {
 				killedByError = true;
 				log.warn("Detected error in manim output, killing process");
