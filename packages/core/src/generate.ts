@@ -1,7 +1,7 @@
 import type { AgentEvent } from "@eureka/agent";
 import { Agent } from "@eureka/agent";
 import { resolveModelFromString } from "@eureka/ai";
-import { cp, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,7 +114,6 @@ export async function generateManimCode(
 		}
 
 		// Read back the written file to get the code
-		const { readFile } = await import("node:fs/promises");
 		writtenCode = await readFile(writtenPath, "utf-8");
 
 		log.info("Agent wrote scene to: " + writtenPath);

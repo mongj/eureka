@@ -5,6 +5,7 @@ import type { AgentTool, AgentToolResult } from "@eureka/agent";
 
 const MAX_READ_LINES = 1500;
 const MAX_READ_BYTES = 100_000; // 100KB
+const MAX_SEARCH_RESULTS = 100;
 
 /**
  * Create file system tools scoped to a specific directory.
@@ -154,7 +155,15 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 		}),
 		execute: async (_toolCallId, params): Promise<AgentToolResult<{ files: string[] }>> => {
 			const dirPath = resolveSafe(params.path || ".");
-			const entries = await readdir(dirPath, { withFileTypes: true });
+			let entries;
+			try {
+				entries = await readdir(dirPath, { withFileTypes: true });
+			} catch {
+				return {
+					content: [{ type: "text", text: `Error: Directory "${params.path || "."}" not found.` }],
+					details: { files: [] },
+				};
+			}
 			const files = entries.map((e) => (e.isDirectory() ? e.name + "/" : e.name));
 			return {
 				content: [{ type: "text", text: files.join("\n") || "(empty directory)" }],
@@ -225,10 +234,15 @@ export function createScopedTools(workDir: string): AgentTool<any>[] {
 				};
 			}
 
-			const output = matches.map((m) => `${m.file}:${m.line}: ${m.text}`).join("\n");
+			const truncated = matches.length > MAX_SEARCH_RESULTS;
+			const shown = truncated ? matches.slice(0, MAX_SEARCH_RESULTS) : matches;
+			let output = shown.map((m) => `${m.file}:${m.line}: ${m.text}`).join("\n");
+			if (truncated) {
+				output += `\n\n(showing first ${MAX_SEARCH_RESULTS} of ${matches.length} matches)`;
+			}
 			return {
 				content: [{ type: "text", text: output }],
-				details: { matches },
+				details: { matches: shown },
 			};
 		},
 	};
