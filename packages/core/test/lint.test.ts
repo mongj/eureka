@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { parseLintOutput, lintManimCode } from "../src/lint.js";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -75,14 +75,8 @@ describe("lintManimCode graceful degradation", () => {
 		const filePath = join(workDir, "scene.py");
 		writeFileSync(filePath, "print('hello')");
 
-		// Mock execFile to simulate fixit not being installed
-		const { execFile } = await import("node:child_process");
-		const { promisify } = await import("node:util");
-		const originalExecFile = promisify(execFile);
-
-		// Use vi.mock would be cleaner but we can test via a non-existent workDir
-		// that causes fixit to fail. Instead, let's use a workDir with no pyproject.toml
-		// and verify the function doesn't crash even without config.
+		// Run lintManimCode without pyproject.toml — fixit uses defaults.
+		// The key invariant: lintManimCode never throws, always returns a LintResult.
 		const result = await lintManimCode(filePath, workDir);
 
 		// Without pyproject.toml, fixit uses defaults — should still work or degrade
