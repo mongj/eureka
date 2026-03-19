@@ -2,6 +2,7 @@ import { readFile as fsReadFile } from "node:fs/promises";
 import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
 import { createLogger } from "@eureka/utils/logger";
+import { lintManimCode } from "../lint.js";
 import { extractSceneName } from "../render.js";
 import { renderManimScene } from "../render.js";
 import { RenderError, RenderTimeoutError, type ManimQuality } from "../types.js";
@@ -73,7 +74,7 @@ export function createRenderTool(
 			}
 
 			// Extract scene name
-			const sceneName = extractSceneName(code);
+			let sceneName = extractSceneName(code);
 			if (!sceneName) {
 				return {
 					content: [
@@ -83,6 +84,36 @@ export function createRenderTool(
 						},
 					],
 					details: { videoPath: "", sceneName: "", attempt: attempts },
+				};
+			}
+
+			// Lint check — catch static errors before expensive render.
+			// Lint failures count toward maxAttempts (same counter as render failures).
+			// This is intentional: keeps the mental model simple and prevents infinite loops.
+			const lintResult = await lintManimCode(fullPath, workDir);
+
+			if (lintResult.autofixApplied) {
+				// Re-read file after autofix modified it in-place
+				code = (await fsReadFile(fullPath)).toString("utf-8");
+				const newSceneName = extractSceneName(code);
+				if (newSceneName) {
+					sceneName = newSceneName;
+				}
+				log.info(`render_video: autofix applied ${lintResult.autofixCount} change(s)`);
+			}
+
+			if (!lintResult.passed) {
+				const violationLines = lintResult.violations
+					.map((v) => `  line ${v.line}: [${v.rule}] ${v.message}`)
+					.join("\n");
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Lint check failed with ${lintResult.violations.length} error(s):\n${violationLines}\n\nFix these issues in ${params.path} and call render_video again.`,
+						},
+					],
+					details: { videoPath: "", sceneName, attempt: attempts },
 				};
 			}
 
