@@ -87,7 +87,9 @@ export function createRenderTool(
 				};
 			}
 
-			// Lint check — catch static errors before expensive render
+			// Lint check — catch static errors before expensive render.
+			// Lint failures count toward maxAttempts (same counter as render failures).
+			// This is intentional: keeps the mental model simple and prevents infinite loops.
 			const lintResult = await lintManimCode(fullPath, workDir);
 
 			if (lintResult.autofixApplied) {
