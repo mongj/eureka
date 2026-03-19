@@ -86,22 +86,22 @@ export interface GenerateOptions {
 	/** Manim render quality. Defaults to "low" for fast iteration. */
 	quality?: ManimQuality;
 
-	/** Render timeout in milliseconds. Defaults to 120000 (2 minutes). */
+	/** Render timeout in milliseconds per attempt. Defaults to 120000 (2 minutes). */
 	renderTimeoutMs?: number;
+
+	/** Maximum number of render attempts before giving up. Defaults to 3. */
+	maxRenderAttempts?: number;
 
 	/** If true, keep the temp directory with source files after render. Defaults to false. */
 	keepArtifacts?: boolean;
-
-	/** Custom temp directory path. Defaults to os.tmpdir()/eureka-<random>. */
-	tmpDir?: string;
 
 	/** AbortSignal for cancellation. */
 	signal?: AbortSignal;
 }
 
 export interface GenerateResult {
-	/** Absolute path to the rendered video file (MP4). */
-	videoPath: string;
+	/** Absolute path to the rendered video file (MP4). Absent if render failed after all attempts. */
+	videoPath?: string;
 
 	/** The generated Manim Python code. */
 	code: string;
@@ -109,11 +109,8 @@ export interface GenerateResult {
 	/** Name of the Scene class that was rendered. */
 	sceneName: string;
 
-	/** Time taken for LLM code generation in ms. */
-	generateDurationMs: number;
-
-	/** Time taken for manim render in ms. */
-	renderDurationMs: number;
+	/** Total time taken for generation and rendering in ms. */
+	durationMs: number;
 
 	/** Path to the temp directory (only present if keepArtifacts=true). */
 	artifactsDir?: string;

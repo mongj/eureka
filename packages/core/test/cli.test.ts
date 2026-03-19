@@ -94,8 +94,7 @@ describe("runCli", () => {
 			videoPath: "/tmp/demo.mp4",
 			code: "from manim import *",
 			sceneName: "DemoScene",
-			generateDurationMs: 1234,
-			renderDurationMs: 5678,
+			durationMs: 6912,
 			artifactsDir: "/tmp/eureka-demo",
 		};
 
@@ -106,14 +105,13 @@ describe("runCli", () => {
 		expect(exitCode).toBe(0);
 		expect(errorSpy).not.toHaveBeenCalled();
 		const logged = logSpy.mock.calls.map(([line]) => line);
-		expect(logged).toHaveLength(7);
+		expect(logged).toHaveLength(6);
 		expect(logged[0]).toContain("Prompt: show a circle");
 		expect(logged[1]).toContain("Generating video...");
 		expect(logged[2]).toContain("Video: /tmp/demo.mp4");
 		expect(logged[3]).toContain("Scene: DemoScene");
-		expect(logged[4]).toContain("Generate: 1234ms");
-		expect(logged[5]).toContain("Render: 5678ms");
-		expect(logged[6]).toContain("Artifacts: /tmp/eureka-demo");
+		expect(logged[4]).toContain("Duration: 6912ms");
+		expect(logged[5]).toContain("Artifacts: /tmp/eureka-demo");
 
 		logSpy.mockRestore();
 		errorSpy.mockRestore();

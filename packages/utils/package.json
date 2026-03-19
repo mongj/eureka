@@ -1,7 +1,6 @@
 {
 	"name": "@eureka/utils",
 	"version": "0.0.1",
-	"packageManager": "pnpm@10.28.1",
 	"description": "Shared utilities for Eureka packages",
 	"license": "MIT",
 	"type": "module",
@@ -27,5 +26,6 @@
 	},
 	"engines": {
 		"node": ">=20.0.0"
-	}
+	},
+	"packageManager": "pnpm@10.28.1"
 }

@@ -5,10 +5,14 @@ const mockState = vi.hoisted(() => ({
 	workDir: null as string | null,
 }));
 
-vi.mock("@eureka/ai", () => ({
-	getModel: vi.fn(() => ({ id: "test-model" })),
-	resolveModelFromString: vi.fn(() => ({ id: "test-model" })),
-}));
+vi.mock("@eureka/ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@eureka/ai")>();
+	return {
+		...actual,
+		getModel: vi.fn(() => ({ id: "test-model" })),
+		resolveModelFromString: vi.fn(() => ({ id: "test-model" })),
+	};
+});
 
 vi.mock("@eureka/agent", () => {
 	class FakeAgent {
@@ -29,7 +33,7 @@ vi.mock("@eureka/agent", () => {
 	};
 });
 
-vi.mock("../src/tools.js", () => ({
+vi.mock("../src/tools/index.js", () => ({
 	createScopedTools: vi.fn((workDir: string) => {
 		mockState.workDir = workDir;
 		return [];

@@ -1,7 +1,6 @@
 {
 	"name": "@eureka/core",
 	"version": "0.0.1",
-	"packageManager": "pnpm@10.28.1",
 	"bin": {
 		"eureka": "./dist/cli.js"
 	},
@@ -16,7 +15,7 @@
 	},
 	"scripts": {
 		"clean": "rm -rf dist",
-		"build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json",
+		"build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json && cp -r agent-workspace-template dist/agent-workspace-template",
 		"dev": "tsc -p tsconfig.build.json --watch",
 		"test": "vitest run",
 		"cli": "node ./dist/cli.js"
@@ -25,6 +24,7 @@
 		"@eureka/agent": "workspace:*",
 		"@eureka/ai": "workspace:*",
 		"@eureka/utils": "workspace:*",
+		"diff": "^8.0.3",
 		"dotenv": "^16.4.7"
 	},
 	"devDependencies": {
@@ -34,5 +34,6 @@
 	},
 	"engines": {
 		"node": ">=20.0.0"
-	}
+	},
+	"packageManager": "pnpm@10.28.1"
 }
