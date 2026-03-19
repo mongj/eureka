@@ -83,6 +83,9 @@ export interface GenerateOptions {
 	/** LLM model to use (e.g., "anthropic/claude-sonnet-4-20250514"). Defaults to claude sonnet. */
 	model?: string;
 
+	/** Generation mode. "snippet" produces short embeddable animations with a pre-planning step. Defaults to "default". */
+	mode?: "default" | "snippet";
+
 	/** Manim render quality. Defaults to "low" for fast iteration. */
 	quality?: ManimQuality;
 

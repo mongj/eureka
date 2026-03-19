@@ -21,9 +21,17 @@ function loadPromptFile(name: string): string {
 // Load all prompt parts eagerly at module init
 const manimBase = loadPromptFile("manim-base.txt");
 const agentWorkflow = loadPromptFile("agent-workflow.txt");
+const snippetMode = loadPromptFile("snippet-mode.txt");
+const snippetPlanner = loadPromptFile("snippet-planner.txt");
 
 /** Base Manim system prompt — rules and style guidelines. */
 export const MANIM_SYSTEM_PROMPT = manimBase;
 
 /** Full agent system prompt — base + workflow + output requirements. */
 export const AGENT_SYSTEM_PROMPT = `${manimBase}\n\n${agentWorkflow}`;
+
+/** System prompt for the snippet planner LLM call. */
+export const SNIPPET_PLANNER_PROMPT = snippetPlanner;
+
+/** Agent system prompt for snippet mode — base + snippet overrides + workflow. */
+export const SNIPPET_SYSTEM_PROMPT = `${manimBase}\n\n${snippetMode}\n\n${agentWorkflow}`;
