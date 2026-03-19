@@ -1,39 +1,29 @@
-export const MANIM_SYSTEM_PROMPT = `You are an expert Manim animator. Your job is to generate Manim Community Edition Python code that creates mathematical animations.
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-<rules>
-1. Always start with \`from manim import *\`
-2. Define exactly one class that extends Scene (or a subclass like ThreeDScene, MovingCameraScene)
-3. Implement the \`construct(self)\` method with all animation logic
-4. You may use numpy (available as \`np\` via manim). Do not import other packages (no scipy, no os, no sys, etc.)
-5. The class name should be descriptive of the animation content (e.g., PythagoreanTheorem, QuadraticFormula)
-6. Keep animations concise — aim for 5-30 seconds of content
-7. Use \`self.play()\` for animations and \`self.wait()\` for pauses
-8. Add text labels and annotations to make the animation educational
-9. in a raw string r"...", use single slash for LaTeX commands. Only use double backslash if you're in a regular (non-raw) string.
-</rules>
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-<style_guidelines>
-Use vibrant colors (BLUE, RED, GREEN, YELLOW, PURPLE, ORANGE). Add smooth transitions between concepts.
+/**
+ * Load a prompt text file from the prompts/ directory.
+ * Files are loaded eagerly at module init — a missing or empty file
+ * means a broken build/package and should fail immediately.
+ */
+function loadPromptFile(name: string): string {
+	const filePath = join(__dirname, "prompts", name);
+	const content = readFileSync(filePath, "utf-8").trim();
+	if (!content) {
+		throw new Error(`Prompt file is empty: ${name}`);
+	}
+	return content;
+}
 
-For math: use MathTex (e.g., \`MathTex(r"x^2 + y^2 = r^2")\`).
-For text: use Text (e.g., \`Text("Pythagorean Theorem")\`).
-For layout: position elements clearly using .to_edge(), .next_to(), .move_to().
-For grouping: use VGroup to organize related elements.
-</style_guidelines>`;
+// Load all prompt parts eagerly at module init
+const manimBase = loadPromptFile("manim-base.txt");
+const agentWorkflow = loadPromptFile("agent-workflow.txt");
 
-export const AGENT_SYSTEM_PROMPT = `${MANIM_SYSTEM_PROMPT}
+/** Base Manim system prompt — rules and style guidelines. */
+export const MANIM_SYSTEM_PROMPT = manimBase;
 
-<workflow>
-You have access to file tools and a render tool. Follow this workflow:
-
-1. Search for relevant templates — use find_files and search_files to explore the templates/ directory. Look for templates relevant to the user's request (e.g., if they want a 3D animation, search for ThreeDScene or 3d).
-2. Read relevant templates — use read_file to study 1-2 templates that are most relevant. Understand the patterns they use.
-3. Write your scene — use write_file to write your manim scene code to a file named "scene.py" in the working directory. Adapt patterns from templates but write original code tailored to the user's request.
-4. Render the video — use render_video to render your scene file. If rendering fails, read the error output carefully, fix the code using edit_file, and call render_video again.
-
-If no templates are relevant, skip steps 1-2 and write the scene directly.
-</workflow>
-
-<output_requirements>
-You must use the write_file tool to write "scene.py". After writing, always call render_video to render it. If the render fails, fix the code and retry. Do not give up until the render succeeds or you've exhausted all attempts. After a successful render, briefly describe what the animation shows.
-</output_requirements>`;
+/** Full agent system prompt — base + workflow + output requirements. */
+export const AGENT_SYSTEM_PROMPT = `${manimBase}\n\n${agentWorkflow}`;

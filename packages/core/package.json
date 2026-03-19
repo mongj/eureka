@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"clean": "rm -rf dist",
-		"build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json && cp -r agent-workspace-template dist/agent-workspace-template",
+		"build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json && cp -r agent-workspace-template dist/agent-workspace-template && cp -r src/prompts dist/prompts",
 		"dev": "tsc -p tsconfig.build.json --watch",
 		"test": "vitest run",
 		"cli": "node ./dist/cli.js"
