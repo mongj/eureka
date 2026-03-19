@@ -138,6 +138,9 @@ export interface RenderOptions {
 	/** Directory to write the scene file and capture output. */
 	workDir: string;
 
+	/** If true, render only the last frame as a PNG instead of a video. */
+	saveLastFrame?: boolean;
+
 	/** AbortSignal for cancellation. */
 	signal?: AbortSignal;
 }

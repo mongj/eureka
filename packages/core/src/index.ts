@@ -68,7 +68,7 @@ export { configure, getConfig } from "./config.js";
 export type { CoreConfig, ModelTask } from "./config.js";
 export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from "./dependencies.js";
 export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT, SNIPPET_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT } from "./prompts.js";
-export { extractSceneName, renderManimScene } from "./render.js";
+export { extractSceneName, findRenderOutput, renderManimScene } from "./render.js";
 export { createScopedTools } from "./tools/index.js";
 export type { RenderToolConfig, RenderToolDetails } from "./tools/render.js";
 export {

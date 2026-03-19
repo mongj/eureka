@@ -47,14 +47,52 @@ export function extractSceneName(code: string): string | null {
 }
 
 /**
- * Render Manim Python code into a video file.
+ * Locate the rendered output file after a successful manim render.
+ *
+ * Video mode: media/videos/scene/<quality_dir>/<SceneName>.mp4
+ * Image mode (-s): media/images/scene/<SceneName>*.png
+ *   (manim appends a version suffix, e.g. TestScene_ManimCE_v0.20.1.png)
+ */
+export async function findRenderOutput(mediaDir: string, sceneName: string, saveLastFrame: boolean): Promise<string> {
+	if (saveLastFrame) {
+		const imagesDir = join(mediaDir, "images", "scene");
+		let files: string[];
+		try {
+			files = await readdir(imagesDir);
+		} catch {
+			throw new RenderError("No images output directory found after render", "", "");
+		}
+		const png = files.find((f) => f.startsWith(sceneName) && f.endsWith(".png"));
+		if (!png) {
+			throw new RenderError(`No PNG output found for scene "${sceneName}" in ${imagesDir}`, "", "");
+		}
+		return join(imagesDir, png);
+	}
+
+	// Video mode
+	const videosDir = join(mediaDir, "videos", "scene");
+	let qualityDirs: string[];
+	try {
+		qualityDirs = await readdir(videosDir);
+	} catch {
+		throw new RenderError("No output directory found after render", "", "");
+	}
+	if (qualityDirs.length === 0) {
+		throw new RenderError("No output directory found after render", "", "");
+	}
+	const outputDir = join(videosDir, qualityDirs[0]);
+	return join(outputDir, `${sceneName}.mp4`);
+}
+
+/**
+ * Render Manim Python code into a video file or static image.
  *
  * Writes the code to a temp file, spawns `manim render`, and streams
  * stderr to detect errors early. If an error pattern is detected in
  * stderr, the process is killed immediately (manim can hang after errors).
  */
 export async function renderManimScene(options: RenderOptions): Promise<string> {
-	const { code, sceneName, quality, timeoutMs, workDir, signal } = options;
+	const { code, sceneName, quality, timeoutMs, workDir, saveLastFrame, signal } = options;
 
 	// Write the scene file
 	const sceneFile = join(workDir, "scene.py");
@@ -64,11 +102,15 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 	// Build the manim command
 	const qualityFlag = QUALITY_FLAGS[quality];
 	const mediaDir = join(workDir, "media");
-	const args = ["render", qualityFlag, "--media_dir", mediaDir, sceneFile, sceneName];
+	const args = ["render", qualityFlag, "--media_dir", mediaDir];
+	if (saveLastFrame) {
+		args.push("-s");
+	}
+	args.push(sceneFile, sceneName);
 
 	log.info(`Rendering: manim ${args.join(" ")}`);
 
-	const videoPath = await new Promise<string>((resolve, reject) => {
+	const { stderr } = await new Promise<{ stderr: string }>((resolve, reject) => {
 		let settled = false;
 		let stderrChunks: string[] = [];
 		let killedByError = false;
@@ -129,21 +171,7 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 				return;
 			}
 
-			// Find the output video file
-			// Manim outputs to: media/videos/scene/<quality_dir>/<SceneName>.mp4
-			try {
-				const videosDir = join(mediaDir, "videos", "scene");
-				const qualityDirs = await readdir(videosDir);
-				if (qualityDirs.length === 0) {
-					reject(new RenderError("No output directory found after render", code, stderr));
-					return;
-				}
-				const outputDir = join(videosDir, qualityDirs[0]);
-				const mp4Path = join(outputDir, `${sceneName}.mp4`);
-				resolve(mp4Path);
-			} catch (fsError) {
-				reject(new RenderError(`Could not locate output video: ${(fsError as Error).message}`, code, stderr));
-			}
+			resolve({ stderr });
 		});
 
 		proc.on("error", (err) => {
@@ -154,5 +182,10 @@ export async function renderManimScene(options: RenderOptions): Promise<string> 
 		});
 	});
 
-	return videoPath;
+	// Locate the output file using the extracted helper
+	try {
+		return await findRenderOutput(mediaDir, sceneName, !!saveLastFrame);
+	} catch (fsError) {
+		throw new RenderError(`Could not locate output: ${(fsError as Error).message}`, code, stderr);
+	}
 }
