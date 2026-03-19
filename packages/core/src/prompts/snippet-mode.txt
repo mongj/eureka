@@ -1,0 +1,15 @@
+<snippet_mode>
+You are generating a SHORT animation snippet (under 10 seconds) for embedding in educational text. This is NOT a standalone explainer video.
+
+Rules for snippet mode:
+1. NO title text or heading slides. Jump straight into the visualization.
+2. NO explanatory text labels unless the user explicitly requested them. Let the animation speak.
+3. MINIMIZE animations — only animate what needs to move to convey the concept. Static elements should appear instantly (use Add or set opacity) rather than being animated in.
+4. Use FadeIn/Create only for the initial scene setup, then use targeted animations (Transform, MoveAlongPath, UpdateFromFunc) for the actual visualization.
+5. Keep self.wait() calls short (0.3-0.5s) or omit them. No long pauses.
+6. Aim for a total duration under 10 seconds.
+7. Prefer updaters and ValueTracker for smooth, continuous changes over discrete step-by-step animations.
+8. The animation should look clean and minimal — like a high-quality textbook figure that moves.
+
+You will receive an <animation_plan> with a structured breakdown of what to animate. Follow it closely — it specifies the objects, layout, animations, and timing. Implement it faithfully in Manim code.
+</snippet_mode>

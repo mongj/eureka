@@ -1,5 +1,5 @@
-import { rm } from "node:fs/promises";
 import { createLogger } from "@eureka/utils/logger";
+import { rm } from "node:fs/promises";
 import { checkAllDependencies } from "./dependencies.js";
 import { generateManimCode } from "./generate.js";
 import { type GenerateOptions, type GenerateResult } from "./types.js";
@@ -32,6 +32,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 	const { code, sceneName, workDir, videoPath } = await generateManimCode(prompt, {
 		model: options.model,
 		signal,
+		mode: options.mode,
 		render: {
 			quality,
 			timeoutMs: renderTimeoutMs,
@@ -71,7 +72,7 @@ export {
 	checkFixitInstalled,
 	checkManimInstalled,
 } from "./dependencies.js";
-export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT } from "./prompts.js";
+export { AGENT_SYSTEM_PROMPT, MANIM_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT, SNIPPET_SYSTEM_PROMPT } from "./prompts.js";
 export { extractSceneName, renderManimScene } from "./render.js";
 export { createScopedTools } from "./tools/index.js";
 export type { RenderToolConfig, RenderToolDetails } from "./tools/render.js";

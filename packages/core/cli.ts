@@ -34,6 +34,7 @@ export function printHelp(): string {
 		"  --quality <low|medium|high|fourk>  Render quality",
 		"  --model <provider/model-id>         Model override",
 		"  --render-timeout-ms <number>        Render timeout in milliseconds",
+		"  --mode <default|snippet>            Generation mode",
 		"  --keep-artifacts                    Keep generated temp files",
 		"  --help                              Show this help message",
 	].join("\n");
@@ -78,6 +79,17 @@ export function parseCliArgs(args: string[]): CliParseResult {
 				throw new Error('"--render-timeout-ms" must be a positive integer');
 			}
 			options.renderTimeoutMs = Number.parseInt(value, 10);
+			i++;
+			continue;
+		}
+
+		if (parsingFlags && arg === "--mode") {
+			const value = getFlagValue(args, i, arg);
+			const validModes = new Set(["default", "snippet"]);
+			if (!validModes.has(value)) {
+				throw new Error(`"--mode" must be one of: ${[...validModes].join(", ")}`);
+			}
+			options.mode = value as GenerateOptions["mode"];
 			i++;
 			continue;
 		}
