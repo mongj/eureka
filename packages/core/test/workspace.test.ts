@@ -34,6 +34,24 @@ describe("copyWorkspaceTemplate", () => {
 		expect(content).toContain("from manim import");
 	});
 
+	it("copies pyproject.toml and rules directory", async () => {
+		workDir = await mkdtemp(join(tmpdir(), "eureka-test-ws-"));
+		await copyWorkspaceTemplate(workDir);
+
+		const { access } = await import("node:fs/promises");
+
+		// pyproject.toml should be copied
+		await expect(access(join(workDir, "pyproject.toml"))).resolves.toBeUndefined();
+
+		// rules/ directory should be copied with rule files
+		const rules = await readdir(join(workDir, "rules"));
+		expect(rules).toContain("__init__.py");
+		expect(rules).toContain("manim_import.py");
+		expect(rules).toContain("scene_structure.py");
+		expect(rules).toContain("manim_api_fixes.py");
+		expect(rules).toContain("empty_scene.py");
+	});
+
 	it("does not overwrite existing files in workDir", async () => {
 		workDir = await mkdtemp(join(tmpdir(), "eureka-test-ws-"));
 		const { writeFile, mkdir } = await import("node:fs/promises");

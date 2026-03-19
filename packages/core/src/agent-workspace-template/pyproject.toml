@@ -1,0 +1,11 @@
+[tool.fixit]
+# Stop fixit from searching parent directories for config
+root = true
+
+# Enable only our custom Manim rules — we don't care about code quality/style,
+# only correctness that prevents render failures.
+enable = [".rules"]
+
+# Disable all built-in code-quality rules (UseFstring, NoInheritFromObject, etc.)
+# We're using fixit for static error detection, not style enforcement.
+disable = ["fixit.rules"]

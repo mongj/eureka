@@ -73,6 +73,23 @@ export class RenderTimeoutError extends EurekaError {
 	}
 }
 
+export interface LintViolation {
+	rule: string;
+	line: number;
+	col: number;
+	message: string;
+	hasAutofix?: boolean;
+}
+
+export class LintError extends EurekaError {
+	violations: LintViolation[];
+	constructor(violations: LintViolation[]) {
+		super(`${violations.length} lint violation(s) found`);
+		this.name = "LintError";
+		this.violations = violations;
+	}
+}
+
 // ============================================================
 // Options and results
 // ============================================================

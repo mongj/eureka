@@ -3,6 +3,8 @@ dist/
 *.tsbuildinfo
 .DS_Store
 media/
+__pycache__/
+.pytest_cache/
 
 # Environment Variables
 .env

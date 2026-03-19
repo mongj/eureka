@@ -15,8 +15,16 @@ vi.mock("../src/render.js", async (importOriginal) => {
 	};
 });
 
+vi.mock("../src/lint.js", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../src/lint.js")>();
+	return { ...actual, lintManimCode: vi.fn() };
+});
+
 import { renderManimScene } from "../src/render.js";
 const mockRender = vi.mocked(renderManimScene);
+
+import { lintManimCode } from "../src/lint.js";
+const mockLint = vi.mocked(lintManimCode);
 
 let workDir: string;
 
@@ -56,6 +64,13 @@ function getTextOutput(result: any): string {
 beforeEach(() => {
 	workDir = mkdtempSync(join(tmpdir(), "eureka-test-render-"));
 	vi.clearAllMocks();
+	// Default: lint passes — existing tests don't need to care about lint
+	mockLint.mockResolvedValue({
+		passed: true,
+		violations: [],
+		autofixApplied: false,
+		autofixCount: 0,
+	});
 });
 
 afterEach(() => {
@@ -163,6 +178,64 @@ describe("render tool", () => {
 		expect(getTextOutput(result2)).toContain("Successfully rendered");
 		expect(result2.details.attempt).toBe(2);
 		expect(result2.details.outputPath).toBe(expectedPath);
+	});
+
+	it("runs lint before render and proceeds when clean", async () => {
+		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
+		const expectedPath = join(workDir, "media/videos/scene/480p15/MyScene.mp4");
+		mockRender.mockResolvedValueOnce(expectedPath);
+		mockLint.mockResolvedValueOnce({
+			passed: true,
+			violations: [],
+			autofixApplied: false,
+			autofixCount: 0,
+		});
+
+		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
+		const result = await tool.execute("call-1", { path: "scene.py" });
+
+		expect(mockLint).toHaveBeenCalledWith(join(workDir, "scene.py"), workDir);
+		expect(mockRender).toHaveBeenCalled();
+		expect(getTextOutput(result)).toContain("Successfully rendered");
+	});
+
+	it("returns lint errors without calling render", async () => {
+		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
+		mockLint.mockResolvedValueOnce({
+			passed: false,
+			violations: [{ rule: "SceneStructure", line: 3, col: 0, message: "Missing construct method", hasAutofix: false }],
+			autofixApplied: false,
+			autofixCount: 0,
+		});
+
+		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
+		const result = await tool.execute("call-1", { path: "scene.py" });
+
+		expect(mockLint).toHaveBeenCalled();
+		expect(mockRender).not.toHaveBeenCalled();
+		const output = getTextOutput(result);
+		expect(output).toContain("Lint check failed");
+		expect(output).toContain("SceneStructure");
+		expect(output).toContain("Missing construct method");
+		expect(result.details.attempt).toBe(1); // Counts as an attempt
+	});
+
+	it("re-reads file after autofix and proceeds to render", async () => {
+		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
+		const expectedPath = join(workDir, "media/videos/scene/480p15/MyScene.mp4");
+		mockRender.mockResolvedValueOnce(expectedPath);
+		mockLint.mockResolvedValueOnce({
+			passed: true,
+			violations: [],
+			autofixApplied: true,
+			autofixCount: 2,
+		});
+
+		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
+		const result = await tool.execute("call-1", { path: "scene.py" });
+
+		expect(mockRender).toHaveBeenCalled();
+		expect(getTextOutput(result)).toContain("Successfully rendered");
 	});
 
 	it("returns max attempts error after N failures", async () => {
