@@ -1,17 +1,17 @@
 import type { AgentEvent } from "@eureka/agent";
 import { Agent } from "@eureka/agent";
-import { resolveModelFromString } from "@eureka/ai";
+import { completeSimple, resolveModelFromString } from "@eureka/ai";
 import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
-import { AGENT_SYSTEM_PROMPT } from "./prompts.js";
+import { AGENT_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT, SNIPPET_SYSTEM_PROMPT } from "./prompts.js";
 import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools/index.js";
 import type { RenderToolConfig } from "./tools/render.js";
 import { createLogger } from "@eureka/utils/logger";
-import { InvalidPromptError, NoCodeGeneratedError, type ManimQuality } from "./types.js";
+import { EurekaError, InvalidPromptError, NoCodeGeneratedError, type ManimQuality } from "./types.js";
 
 const log = createLogger("Generate");
 
@@ -34,6 +34,44 @@ export async function copyWorkspaceTemplate(workDir: string): Promise<void> {
 	const templatePath = getWorkspaceTemplatePath();
 	await cp(templatePath, workDir, { recursive: true, force: false, errorOnExist: false });
 	log.info("Copied workspace template to: " + workDir);
+}
+
+interface PlanSnippetOptions {
+	signal?: AbortSignal;
+}
+
+/**
+ * Run the snippet planner: takes a user prompt, returns a structured animation overview.
+ * Uses a non-agent LLM call (no tools) with the SNIPPET_PLANNER_PROMPT.
+ */
+export async function planSnippet(prompt: string, options?: PlanSnippetOptions): Promise<string> {
+	const config = getConfig();
+	const model = resolveModelFromString(config.models["plan-snippet"]);
+
+	log.info("Planning snippet animation...");
+
+	const response = await completeSimple(
+		model,
+		{
+			systemPrompt: SNIPPET_PLANNER_PROMPT,
+			messages: [{ role: "user" as const, content: prompt, timestamp: Date.now() }],
+		},
+		{ signal: options?.signal },
+	);
+
+	const text = response.content
+		.filter((c): c is { type: "text"; text: string } => c.type === "text")
+		.map((c) => c.text)
+		.join("\n")
+		.trim();
+
+	if (!text) {
+		throw new EurekaError("Snippet planner produced empty output");
+	}
+
+	log.debug("Planner output:\n" + text);
+
+	return text;
 }
 
 export interface GenerateOptions {
