@@ -10,6 +10,11 @@ const log = createLogger("Tools");
 
 const renderSchema = Type.Object({
 	path: Type.String({ description: "Relative path to the .py scene file to render (e.g., 'scene.py')" }),
+	output: Type.Optional(
+		Type.Union([Type.Literal("video"), Type.Literal("image")], {
+			description: "Output format: 'video' for MP4 (default), 'image' for PNG (last frame only)",
+		}),
+	),
 });
 
 export interface RenderToolConfig {
@@ -33,14 +38,17 @@ export function createRenderTool(
 	let attempts = 0;
 
 	return {
-		name: "render_video",
-		label: "Render Video",
+		name: "render",
+		label: "Render",
 		description:
-			"Render a Manim scene file into an MP4 video. Call this after writing your scene file. If rendering fails, read the error, fix your code, and try again.",
+			"Render a Manim scene file. Outputs MP4 video by default, or PNG image (last frame) when output is 'image'. Call this after writing your scene file. If rendering fails, read the error, fix your code, and try again.",
 		parameters: renderSchema,
 		execute: async (_toolCallId, params): Promise<AgentToolResult<RenderToolDetails>> => {
 			attempts++;
-			log.info(`render_video: attempt ${attempts}/${config.maxAttempts} for ${params.path}`);
+			const saveLastFrame = params.output === "image";
+			log.info(
+				`render: attempt ${attempts}/${config.maxAttempts} for ${params.path} (output: ${params.output ?? "video"})`,
+			);
 
 			if (attempts > config.maxAttempts) {
 				return {
@@ -65,7 +73,7 @@ export function createRenderTool(
 					content: [
 						{
 							type: "text",
-							text: `File not found: ${params.path}. Write the scene file first, then call render_video.`,
+							text: `File not found: ${params.path}. Write the scene file first, then call render.`,
 						},
 					],
 					details: { outputPath: "", sceneName: "", attempt: attempts },
@@ -94,12 +102,15 @@ export function createRenderTool(
 					quality: config.quality,
 					timeoutMs: config.timeoutMs,
 					workDir,
+					saveLastFrame,
 					signal: config.signal,
 				});
 
-				log.info(`render_video: success — ${outputPath}`);
+				log.info(`render: success — ${outputPath}`);
 				return {
-					content: [{ type: "text", text: `Successfully rendered: ${outputPath}` }],
+					content: [
+						{ type: "text", text: `Successfully rendered ${saveLastFrame ? "image" : "video"}: ${outputPath}` },
+					],
 					details: { outputPath, sceneName, attempt: attempts },
 				};
 			} catch (error) {
@@ -109,12 +120,12 @@ export function createRenderTool(
 				}
 
 				if (error instanceof RenderTimeoutError) {
-					log.warn(`render_video: timeout after ${config.timeoutMs}ms (attempt ${attempts}/${config.maxAttempts})`);
+					log.warn(`render: timeout after ${config.timeoutMs}ms (attempt ${attempts}/${config.maxAttempts})`);
 					return {
 						content: [
 							{
 								type: "text",
-								text: `Render timed out after ${config.timeoutMs}ms. Try simplifying your animation (fewer objects, shorter duration) and render again.`,
+								text: `Render timed out after ${config.timeoutMs}ms. Try simplifying your scene (fewer objects, shorter duration) and render again.`,
 							},
 						],
 						details: { outputPath: "", sceneName, attempt: attempts },
@@ -122,13 +133,13 @@ export function createRenderTool(
 				}
 
 				if (error instanceof RenderError) {
-					log.warn(`render_video: failed (attempt ${attempts}/${config.maxAttempts})`);
+					log.warn(`render: failed (attempt ${attempts}/${config.maxAttempts})`);
 					const stderrSnippet = error.stderr ? `\n\nmanim stderr:\n${error.stderr}` : "";
 					return {
 						content: [
 							{
 								type: "text",
-								text: `Render failed: ${error.message}${stderrSnippet}\n\nRead the error above, fix the code in ${params.path}, and call render_video again.`,
+								text: `Render failed: ${error.message}${stderrSnippet}\n\nRead the error above, fix the code in ${params.path}, and call render again.`,
 							},
 						],
 						details: { outputPath: "", sceneName, attempt: attempts },
@@ -137,7 +148,7 @@ export function createRenderTool(
 
 				// Unexpected error — still return as tool error so agent can see it
 				const msg = error instanceof Error ? error.message : String(error);
-				log.error(`render_video: unexpected error — ${msg}`);
+				log.error(`render: unexpected error — ${msg}`);
 				return {
 					content: [{ type: "text", text: `Unexpected render error: ${msg}` }],
 					details: { outputPath: "", sceneName, attempt: attempts },

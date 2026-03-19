@@ -63,19 +63,19 @@ afterEach(() => {
 });
 
 describe("createRenderTool", () => {
-	it("returns a valid AgentTool shape", () => {
+	it("returns a tool named 'render'", () => {
 		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
 
-		expect(tool.name).toBe("render_video");
-		expect(tool.label).toBe("Render Video");
+		expect(tool.name).toBe("render");
+		expect(tool.label).toBe("Render");
 		expect(tool.description).toBeTruthy();
 		expect(tool.parameters).toBeTruthy();
 		expect(typeof tool.execute).toBe("function");
 	});
 });
 
-describe("render_video", () => {
-	it("succeeds and returns videoPath on happy path", async () => {
+describe("render tool", () => {
+	it("succeeds and returns outputPath on happy path", async () => {
 		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
 		const expectedPath = join(workDir, "media/videos/scene/480p15/MyScene.mp4");
 		mockRender.mockResolvedValueOnce(expectedPath);
@@ -93,6 +93,7 @@ describe("render_video", () => {
 				quality: "low",
 				timeoutMs: 60_000,
 				workDir,
+				saveLastFrame: false,
 			}),
 		);
 	});
@@ -186,22 +187,56 @@ describe("render_video", () => {
 		expect(r3.details.attempt).toBe(3);
 		expect(getTextOutput(r3)).toContain("Maximum render attempts (2) exceeded");
 	});
+
+	it("passes saveLastFrame when output is image", async () => {
+		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
+		const expectedPath = join(workDir, "media/images/scene/MyScene_ManimCE_v0.20.1.png");
+		mockRender.mockResolvedValueOnce(expectedPath);
+
+		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
+		const result = await tool.execute("call-1", { path: "scene.py", output: "image" });
+
+		expect(getTextOutput(result)).toContain("Successfully rendered image");
+		expect(result.details.outputPath).toBe(expectedPath);
+		expect(mockRender).toHaveBeenCalledWith(
+			expect.objectContaining({
+				saveLastFrame: true,
+			}),
+		);
+	});
+
+	it("defaults output to video when not specified", async () => {
+		writeFileSync(join(workDir, "scene.py"), VALID_SCENE);
+		const expectedPath = join(workDir, "media/videos/scene/480p15/MyScene.mp4");
+		mockRender.mockResolvedValueOnce(expectedPath);
+
+		const tool = createRenderTool(makeResolveSafe(workDir), workDir, defaultConfig);
+		const result = await tool.execute("call-1", { path: "scene.py" });
+
+		expect(getTextOutput(result)).toContain("Successfully rendered video");
+		expect(mockRender).toHaveBeenCalledWith(
+			expect.objectContaining({
+				saveLastFrame: false,
+			}),
+		);
+		expect(result.details.outputPath).toBe(expectedPath);
+	});
 });
 
 describe("createScopedTools with render config", () => {
-	it("includes render_video tool when render config is provided", () => {
+	it("includes render tool when render config is provided", () => {
 		const tools = createScopedTools(workDir, { render: defaultConfig });
 		const names = tools.map((t) => t.name);
 
-		expect(names).toContain("render_video");
-		expect(names).toContain("write_file"); // file tools still there
+		expect(names).toContain("render");
+		expect(names).toContain("write_file");
 	});
 
-	it("excludes render_video tool when no render config", () => {
+	it("excludes render tool when no render config", () => {
 		const tools = createScopedTools(workDir);
 		const names = tools.map((t) => t.name);
 
-		expect(names).not.toContain("render_video");
-		expect(names).toContain("write_file"); // file tools still there
+		expect(names).not.toContain("render");
+		expect(names).toContain("write_file");
 	});
 });

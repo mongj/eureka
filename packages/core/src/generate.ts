@@ -164,7 +164,7 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 				if (event.toolName === "write_file" && details?.path) {
 					writtenPath = details.path;
 				}
-				if (event.toolName === "render_video" && details?.outputPath) {
+				if (event.toolName === "render" && details?.outputPath) {
 					outputPath = details.outputPath;
 				}
 			}
