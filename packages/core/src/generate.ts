@@ -1,6 +1,7 @@
 import type { AgentEvent } from "@eureka/agent";
 import { Agent } from "@eureka/agent";
 import { completeSimple, resolveModelFromString } from "@eureka/ai";
+import { createLogger } from "@eureka/utils/logger";
 import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -10,7 +11,6 @@ import { AGENT_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT, SNIPPET_SYSTEM_PROMPT } fr
 import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools/index.js";
 import type { RenderToolConfig } from "./tools/render.js";
-import { createLogger } from "@eureka/utils/logger";
 import { EurekaError, InvalidPromptError, NoCodeGeneratedError, type ManimQuality } from "./types.js";
 
 const log = createLogger("Generate");
@@ -23,7 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export function getWorkspaceTemplatePath(): string {
 	// TODO: Upload this template bundle to a CDN on merges to main, then fetch it when
 	// provisioning new sandboxes instead of shipping the folder inside dist.
-	return join(dirname(__dirname), "agent-workspace-template");
+	return join(__dirname, "agent-workspace-template");
 }
 
 /**
