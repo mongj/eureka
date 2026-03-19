@@ -20,7 +20,7 @@ export interface RenderToolConfig {
 }
 
 export interface RenderToolDetails {
-	videoPath: string;
+	outputPath: string;
 	sceneName: string;
 	attempt: number;
 }
@@ -50,7 +50,7 @@ export function createRenderTool(
 							text: `Maximum render attempts (${config.maxAttempts}) exceeded. The render has failed ${config.maxAttempts} times. Stop retrying.`,
 						},
 					],
-					details: { videoPath: "", sceneName: "", attempt: attempts },
+					details: { outputPath: "", sceneName: "", attempt: attempts },
 				};
 			}
 
@@ -68,7 +68,7 @@ export function createRenderTool(
 							text: `File not found: ${params.path}. Write the scene file first, then call render_video.`,
 						},
 					],
-					details: { videoPath: "", sceneName: "", attempt: attempts },
+					details: { outputPath: "", sceneName: "", attempt: attempts },
 				};
 			}
 
@@ -82,13 +82,13 @@ export function createRenderTool(
 							text: `No Scene subclass found in ${params.path}. Ensure your class extends Scene (e.g., "class MyScene(Scene):").`,
 						},
 					],
-					details: { videoPath: "", sceneName: "", attempt: attempts },
+					details: { outputPath: "", sceneName: "", attempt: attempts },
 				};
 			}
 
 			// Render
 			try {
-				const videoPath = await renderManimScene({
+				const outputPath = await renderManimScene({
 					code,
 					sceneName,
 					quality: config.quality,
@@ -97,10 +97,10 @@ export function createRenderTool(
 					signal: config.signal,
 				});
 
-				log.info(`render_video: success — ${videoPath}`);
+				log.info(`render_video: success — ${outputPath}`);
 				return {
-					content: [{ type: "text", text: `Successfully rendered video: ${videoPath}` }],
-					details: { videoPath, sceneName, attempt: attempts },
+					content: [{ type: "text", text: `Successfully rendered: ${outputPath}` }],
+					details: { outputPath, sceneName, attempt: attempts },
 				};
 			} catch (error) {
 				// Let abort errors propagate — the agent loop handles cancellation
@@ -117,7 +117,7 @@ export function createRenderTool(
 								text: `Render timed out after ${config.timeoutMs}ms. Try simplifying your animation (fewer objects, shorter duration) and render again.`,
 							},
 						],
-						details: { videoPath: "", sceneName, attempt: attempts },
+						details: { outputPath: "", sceneName, attempt: attempts },
 					};
 				}
 
@@ -131,7 +131,7 @@ export function createRenderTool(
 								text: `Render failed: ${error.message}${stderrSnippet}\n\nRead the error above, fix the code in ${params.path}, and call render_video again.`,
 							},
 						],
-						details: { videoPath: "", sceneName, attempt: attempts },
+						details: { outputPath: "", sceneName, attempt: attempts },
 					};
 				}
 
@@ -140,7 +140,7 @@ export function createRenderTool(
 				log.error(`render_video: unexpected error — ${msg}`);
 				return {
 					content: [{ type: "text", text: `Unexpected render error: ${msg}` }],
-					details: { videoPath: "", sceneName, attempt: attempts },
+					details: { outputPath: "", sceneName, attempt: attempts },
 				};
 			}
 		},

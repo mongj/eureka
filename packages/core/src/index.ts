@@ -16,7 +16,7 @@ const log = createLogger("Core");
  * import { generateVideo } from "@eureka/core";
  *
  * const result = await generateVideo("Show the Pythagorean theorem visually");
- * console.log(result.videoPath); // /tmp/eureka-xxxx/media/videos/scene/480p15/PythagoreanTheorem.mp4
+ * console.log(result.outputPath); // /tmp/eureka-xxxx/media/videos/scene/480p15/PythagoreanTheorem.mp4
  * console.log(result.code);      // from manim import * ...
  * ```
  */
@@ -29,7 +29,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 	// Generate code and render via agent — the agent writes scene.py, calls render_video,
 	// and self-corrects on render failures up to maxRenderAttempts.
 	const start = Date.now();
-	const { code, sceneName, workDir, videoPath } = await generateManimCode(prompt, {
+	const { code, sceneName, workDir, outputPath } = await generateManimCode(prompt, {
 		model: options.model,
 		signal,
 		mode: options.mode,
@@ -43,7 +43,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 
 	try {
 		const result: GenerateResult = {
-			videoPath,
+			outputPath,
 			code,
 			sceneName,
 			durationMs,

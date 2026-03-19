@@ -84,7 +84,7 @@ describe("render_video", () => {
 		const result = await tool.execute("call-1", { path: "scene.py" });
 
 		expect(getTextOutput(result)).toContain("Successfully rendered");
-		expect(result.details.videoPath).toBe(expectedPath);
+		expect(result.details.outputPath).toBe(expectedPath);
 		expect(result.details.sceneName).toBe("MyScene");
 		expect(result.details.attempt).toBe(1);
 		expect(mockRender).toHaveBeenCalledWith(
@@ -102,7 +102,7 @@ describe("render_video", () => {
 		const result = await tool.execute("call-1", { path: "missing.py" });
 
 		expect(getTextOutput(result)).toContain("File not found");
-		expect(result.details.videoPath).toBe("");
+		expect(result.details.outputPath).toBe("");
 	});
 
 	it("returns error when no Scene subclass found", async () => {
@@ -112,7 +112,7 @@ describe("render_video", () => {
 		const result = await tool.execute("call-1", { path: "bad.py" });
 
 		expect(getTextOutput(result)).toContain("No Scene subclass");
-		expect(result.details.videoPath).toBe("");
+		expect(result.details.outputPath).toBe("");
 	});
 
 	it("returns error with stderr on RenderError", async () => {
@@ -128,7 +128,7 @@ describe("render_video", () => {
 		expect(output).toContain("Render failed");
 		expect(output).toContain("NameError");
 		expect(output).toContain("fix the code");
-		expect(result.details.videoPath).toBe("");
+		expect(result.details.outputPath).toBe("");
 		expect(result.details.sceneName).toBe("MyScene");
 	});
 
@@ -140,7 +140,7 @@ describe("render_video", () => {
 		const result = await tool.execute("call-1", { path: "scene.py" });
 
 		expect(getTextOutput(result)).toContain("timed out");
-		expect(result.details.videoPath).toBe("");
+		expect(result.details.outputPath).toBe("");
 	});
 
 	it("succeeds on retry after first failure", async () => {
@@ -161,7 +161,7 @@ describe("render_video", () => {
 		const result2 = await tool.execute("call-2", { path: "scene.py" });
 		expect(getTextOutput(result2)).toContain("Successfully rendered");
 		expect(result2.details.attempt).toBe(2);
-		expect(result2.details.videoPath).toBe(expectedPath);
+		expect(result2.details.outputPath).toBe(expectedPath);
 	});
 
 	it("returns max attempts error after N failures", async () => {

@@ -83,8 +83,11 @@ export interface GenerateOptions {
 	/** LLM model to use (e.g., "anthropic/claude-sonnet-4-20250514"). Defaults to claude sonnet. */
 	model?: string;
 
-	/** Generation mode. "snippet" produces short embeddable animations with a pre-planning step. Defaults to "default". */
-	mode?: "default" | "snippet";
+	/** Generation mode. "snippet" produces short embeddable animations. "image" produces a static PNG. Defaults to "default". */
+	mode?: "default" | "snippet" | "image";
+
+	/** Title text rendered in the image. Only used in image mode; ignored for other modes. */
+	title?: string;
 
 	/** Manim render quality. Defaults to "low" for fast iteration. */
 	quality?: ManimQuality;
@@ -103,8 +106,8 @@ export interface GenerateOptions {
 }
 
 export interface GenerateResult {
-	/** Absolute path to the rendered video file (MP4). Absent if render failed after all attempts. */
-	videoPath?: string;
+	/** Absolute path to the rendered output file (MP4 for video modes, PNG for image mode). Absent if render failed. */
+	outputPath?: string;
 
 	/** The generated Manim Python code. */
 	code: string;

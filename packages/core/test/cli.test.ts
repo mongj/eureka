@@ -114,7 +114,7 @@ describe("runCli", () => {
 		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		const result: GenerateResult = {
-			videoPath: "/tmp/demo.mp4",
+			outputPath: "/tmp/demo.mp4",
 			code: "from manim import *",
 			sceneName: "DemoScene",
 			durationMs: 6912,
@@ -131,7 +131,7 @@ describe("runCli", () => {
 		expect(logged).toHaveLength(6);
 		expect(logged[0]).toContain("Prompt: show a circle");
 		expect(logged[1]).toContain("Generating video...");
-		expect(logged[2]).toContain("Video: /tmp/demo.mp4");
+		expect(logged[2]).toContain("Output: /tmp/demo.mp4");
 		expect(logged[3]).toContain("Scene: DemoScene");
 		expect(logged[4]).toContain("Duration: 6912ms");
 		expect(logged[5]).toContain("Artifacts: /tmp/eureka-demo");

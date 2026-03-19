@@ -82,7 +82,8 @@ export interface GenerateOptions {
 		timeoutMs: number;
 		maxAttempts: number;
 	};
-	mode?: "default" | "snippet";
+	mode?: "default" | "snippet" | "image";
+	title?: string;
 }
 
 export interface GenerateResult {
@@ -94,8 +95,8 @@ export interface GenerateResult {
 	sceneName: string;
 	/** Path to the working directory containing the scene file */
 	workDir: string;
-	/** Absolute path to the rendered video (only present when render config was provided and succeeded) */
-	videoPath?: string;
+	/** Absolute path to the rendered output (only present when render config was provided and succeeded) */
+	outputPath?: string;
 }
 
 /**
@@ -155,7 +156,7 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 
 		// Track the file path written by the agent via tool execution events
 		let writtenPath: string | null = null;
-		let videoPath: string | null = null;
+		let outputPath: string | null = null;
 
 		agent.subscribe((event: AgentEvent) => {
 			if (event.type === "tool_execution_end" && !event.isError) {
@@ -163,8 +164,8 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 				if (event.toolName === "write_file" && details?.path) {
 					writtenPath = details.path;
 				}
-				if (event.toolName === "render_video" && details?.videoPath) {
-					videoPath = details.videoPath;
+				if (event.toolName === "render_video" && details?.outputPath) {
+					outputPath = details.outputPath;
 				}
 			}
 			// Log assistant messages for debugging
@@ -211,8 +212,8 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 			workDir,
 		};
 
-		if (videoPath) {
-			result.videoPath = videoPath;
+		if (outputPath) {
+			result.outputPath = outputPath;
 		}
 
 		return result;

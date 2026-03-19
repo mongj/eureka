@@ -126,7 +126,7 @@ export async function runCli(argv: string[]): Promise<number> {
 
 		const result = await generateVideo(parsed.prompt, parsed.options);
 
-		log.info(`Video: ${result.videoPath ?? "render failed"}`);
+		log.info(`Output: ${result.outputPath ?? "render failed"}`);
 		log.info(`Scene: ${result.sceneName}`);
 		log.info(`Duration: ${result.durationMs}ms`);
 
