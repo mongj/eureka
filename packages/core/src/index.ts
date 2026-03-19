@@ -65,7 +65,12 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 // Re-export types and utilities for consumers
 export { configure, getConfig } from "./config.js";
 export type { CoreConfig, ModelTask } from "./config.js";
-export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from "./dependencies.js";
+export {
+	checkAllDependencies,
+	checkFfmpegInstalled,
+	checkFixitInstalled,
+	checkManimInstalled,
+} from "./dependencies.js";
 export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT } from "./prompts.js";
 export { extractSceneName, renderManimScene } from "./render.js";
 export { createScopedTools } from "./tools/index.js";
@@ -75,9 +80,10 @@ export {
 	EurekaError,
 	InvalidModelError,
 	InvalidPromptError,
+	LintError,
 	ManimNotFoundError,
 	NoCodeGeneratedError,
 	RenderError,
 	RenderTimeoutError,
 } from "./types.js";
-export type { GenerateOptions, GenerateResult, ManimQuality, RenderOptions } from "./types.js";
+export type { GenerateOptions, GenerateResult, LintViolation, ManimQuality, RenderOptions } from "./types.js";

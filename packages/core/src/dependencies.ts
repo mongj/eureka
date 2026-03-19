@@ -20,6 +20,14 @@ export async function checkFfmpegInstalled(): Promise<void> {
 	}
 }
 
+export async function checkFixitInstalled(): Promise<void> {
+	try {
+		await execFileAsync("fixit", ["--version"]);
+	} catch {
+		throw new DependencyError("fixit");
+	}
+}
+
 export async function checkAllDependencies(): Promise<void> {
-	await Promise.all([checkManimInstalled(), checkFfmpegInstalled()]);
+	await Promise.all([checkManimInstalled(), checkFfmpegInstalled(), checkFixitInstalled()]);
 }
