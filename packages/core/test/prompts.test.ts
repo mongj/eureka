@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT } from "../src/prompts.js";
+import {
+	MANIM_SYSTEM_PROMPT,
+	AGENT_SYSTEM_PROMPT,
+	SNIPPET_SYSTEM_PROMPT,
+	SNIPPET_PLANNER_PROMPT,
+} from "../src/prompts.js";
 
 describe("prompt loading", () => {
 	it("loads MANIM_SYSTEM_PROMPT from file with expected content", () => {
@@ -17,5 +22,25 @@ describe("prompt loading", () => {
 	it("MANIM_SYSTEM_PROMPT does not contain workflow sections", () => {
 		expect(MANIM_SYSTEM_PROMPT).not.toContain("<workflow>");
 		expect(MANIM_SYSTEM_PROMPT).not.toContain("<output_requirements>");
+	});
+});
+
+describe("snippet prompts", () => {
+	it("loads SNIPPET_PLANNER_PROMPT with expected structure", () => {
+		expect(SNIPPET_PLANNER_PROMPT).toContain("animation planner");
+		expect(SNIPPET_PLANNER_PROMPT).toContain("<objects>");
+		expect(SNIPPET_PLANNER_PROMPT).toContain("<layout>");
+		expect(SNIPPET_PLANNER_PROMPT).toContain("<animations>");
+		expect(SNIPPET_PLANNER_PROMPT).toContain("<timing>");
+	});
+
+	it("loads SNIPPET_SYSTEM_PROMPT as composition of base + snippet mode + workflow", () => {
+		expect(SNIPPET_SYSTEM_PROMPT).toContain("expert Manim animator");
+		expect(SNIPPET_SYSTEM_PROMPT).toContain("<snippet_mode>");
+		expect(SNIPPET_SYSTEM_PROMPT).toContain("<workflow>");
+	});
+
+	it("SNIPPET_SYSTEM_PROMPT contains snippet duration guidance", () => {
+		expect(SNIPPET_SYSTEM_PROMPT).toContain("under 10 seconds");
 	});
 });
