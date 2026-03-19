@@ -4,6 +4,8 @@ import {
 	AGENT_SYSTEM_PROMPT,
 	SNIPPET_SYSTEM_PROMPT,
 	SNIPPET_PLANNER_PROMPT,
+	IMAGE_PLANNER_PROMPT,
+	IMAGE_SYSTEM_PROMPT,
 } from "../src/prompts.js";
 
 describe("prompt loading", () => {
@@ -42,5 +44,25 @@ describe("snippet prompts", () => {
 
 	it("SNIPPET_SYSTEM_PROMPT contains snippet duration guidance", () => {
 		expect(SNIPPET_SYSTEM_PROMPT).toContain("under 10 seconds");
+	});
+});
+
+describe("image prompts", () => {
+	it("loads IMAGE_PLANNER_PROMPT with expected structure", () => {
+		expect(IMAGE_PLANNER_PROMPT).toContain("image planner");
+		expect(IMAGE_PLANNER_PROMPT).toContain("<objects>");
+		expect(IMAGE_PLANNER_PROMPT).toContain("<layout>");
+		expect(IMAGE_PLANNER_PROMPT).toContain("<style>");
+	});
+
+	it("loads IMAGE_SYSTEM_PROMPT as composition of base + image mode + workflow", () => {
+		expect(IMAGE_SYSTEM_PROMPT).toContain("expert Manim animator");
+		expect(IMAGE_SYSTEM_PROMPT).toContain("<image_mode>");
+		expect(IMAGE_SYSTEM_PROMPT).toContain("<workflow>");
+	});
+
+	it("IMAGE_SYSTEM_PROMPT contains static image guidance", () => {
+		expect(IMAGE_SYSTEM_PROMPT).toContain("STATIC IMAGE");
+		expect(IMAGE_SYSTEM_PROMPT).toContain("self.add()");
 	});
 });

@@ -67,7 +67,14 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 export { configure, getConfig } from "./config.js";
 export type { CoreConfig, ModelTask } from "./config.js";
 export { checkAllDependencies, checkFfmpegInstalled, checkManimInstalled } from "./dependencies.js";
-export { MANIM_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT, SNIPPET_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT } from "./prompts.js";
+export {
+	AGENT_SYSTEM_PROMPT,
+	IMAGE_PLANNER_PROMPT,
+	IMAGE_SYSTEM_PROMPT,
+	MANIM_SYSTEM_PROMPT,
+	SNIPPET_PLANNER_PROMPT,
+	SNIPPET_SYSTEM_PROMPT,
+} from "./prompts.js";
 export { extractSceneName, findRenderOutput, renderManimScene } from "./render.js";
 export { createScopedTools } from "./tools/index.js";
 export type { RenderToolConfig, RenderToolDetails } from "./tools/render.js";
