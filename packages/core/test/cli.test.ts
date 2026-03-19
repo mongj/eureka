@@ -65,6 +65,29 @@ describe("parseCliArgs", () => {
 		expect(() => parseCliArgs(["--wat", "show a circle"])).toThrow('Unknown option: "--wat"');
 	});
 
+	it("parses the --mode flag", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(parseCliArgs(["--mode", "snippet", "show a vector"])).toEqual({
+			prompt: "show a vector",
+			options: { mode: "snippet" },
+		});
+	});
+
+	it("rejects invalid --mode values", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(() => parseCliArgs(["--mode", "invalid", "show a vector"])).toThrow(
+			'"--mode" must be one of: default, snippet',
+		);
+	});
+
+	it("rejects missing value for --mode", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(() => parseCliArgs(["--mode"])).toThrow('Missing value for "--mode"');
+	});
+
 	it("rejects missing values for value-taking flags", async () => {
 		const { parseCliArgs } = await import("../cli.js");
 
