@@ -245,7 +245,6 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		const writtenCode = await readFile(writtenPath, "utf-8");
 
 		log.info("Agent wrote scene to: " + writtenPath);
-		log.debug("Generated code:\n" + writtenCode);
 
 		const sceneName = extractSceneName(writtenCode);
 		if (!sceneName) {

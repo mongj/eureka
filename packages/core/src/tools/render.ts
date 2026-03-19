@@ -6,7 +6,7 @@ import { lintManimCode } from "../lint.js";
 import { extractSceneName, renderManimScene } from "../render.js";
 import { RenderError, RenderTimeoutError, type ManimQuality } from "../types.js";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Render");
 
 const renderSchema = Type.Object({
 	path: Type.String({ description: "Relative path to the .py scene file to render (e.g., 'scene.py')" }),

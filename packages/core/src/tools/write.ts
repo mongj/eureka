@@ -1,10 +1,10 @@
+import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
+import { createLogger } from "@eureka/utils/logger";
 import { mkdir as fsMkdir, writeFile as fsWriteFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { Type } from "@eureka/ai";
-import type { AgentTool, AgentToolResult } from "@eureka/agent";
-import { createLogger } from "@eureka/utils/logger";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Write");
 
 const writeSchema = Type.Object({
 	path: Type.String({ description: "Relative file path within the working directory (e.g., 'scene.py')" }),

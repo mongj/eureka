@@ -1,12 +1,12 @@
+import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
+import { createLogger } from "@eureka/utils/logger";
 import { readFile as fsReadFile } from "node:fs/promises";
 import { relative } from "node:path";
-import { Type } from "@eureka/ai";
-import type { AgentTool, AgentToolResult } from "@eureka/agent";
-import { createLogger } from "@eureka/utils/logger";
 import { truncateHead, truncateLine } from "./truncate.js";
 import { walkFiles } from "./walk.js";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Search");
 
 const DEFAULT_LIMIT = 100;
 

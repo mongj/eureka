@@ -1,7 +1,7 @@
-import { readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
-import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
 import { createLogger } from "@eureka/utils/logger";
+import { readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
 import {
 	detectLineEnding,
 	fuzzyFindText,
@@ -12,7 +12,7 @@ import {
 	stripBom,
 } from "./edit-diff.js";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Edit");
 
 const editSchema = Type.Object({
 	path: Type.String({ description: "Relative file path within the working directory" }),
