@@ -82,6 +82,7 @@ export interface GenerateOptions {
 		timeoutMs: number;
 		maxAttempts: number;
 	};
+	mode?: "default" | "snippet";
 }
 
 export interface GenerateResult {
@@ -130,9 +131,23 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		await copyWorkspaceTemplate(workDir);
 		const tools = createScopedTools(workDir, renderToolConfig ? { render: renderToolConfig } : undefined);
 
+		// Determine system prompt and user message based on mode
+		const mode = options?.mode ?? "default";
+		let systemPrompt: string;
+		let agentUserMessage: string;
+
+		if (mode === "snippet") {
+			const plannerOutput = await planSnippet(prompt, { signal: options?.signal });
+			systemPrompt = SNIPPET_SYSTEM_PROMPT;
+			agentUserMessage = `<animation_plan>\n${plannerOutput}\n</animation_plan>\n\nOriginal request: ${prompt}`;
+		} else {
+			systemPrompt = AGENT_SYSTEM_PROMPT;
+			agentUserMessage = prompt;
+		}
+
 		const agent = new Agent({
 			initialState: {
-				systemPrompt: AGENT_SYSTEM_PROMPT,
+				systemPrompt,
 				model,
 				tools,
 			},
@@ -165,7 +180,7 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		});
 
 		// Run the agent
-		await agent.prompt(prompt);
+		await agent.prompt(agentUserMessage);
 		await agent.waitForIdle();
 
 		// Check if agent errored
