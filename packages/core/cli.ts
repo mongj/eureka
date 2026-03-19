@@ -34,7 +34,8 @@ export function printHelp(): string {
 		"  --quality <low|medium|high|fourk>  Render quality",
 		"  --model <provider/model-id>         Model override",
 		"  --render-timeout-ms <number>        Render timeout in milliseconds",
-		"  --mode <default|snippet>            Generation mode",
+		"  --mode <default|snippet|image>      Generation mode",
+		"  --title <text>                      Title for image mode",
 		"  --keep-artifacts                    Keep generated temp files",
 		"  --help                              Show this help message",
 	].join("\n");
@@ -85,11 +86,17 @@ export function parseCliArgs(args: string[]): CliParseResult {
 
 		if (parsingFlags && arg === "--mode") {
 			const value = getFlagValue(args, i, arg);
-			const validModes = new Set(["default", "snippet"]);
+			const validModes = new Set(["default", "snippet", "image"]);
 			if (!validModes.has(value)) {
 				throw new Error(`"--mode" must be one of: ${[...validModes].join(", ")}`);
 			}
 			options.mode = value as GenerateOptions["mode"];
+			i++;
+			continue;
+		}
+
+		if (parsingFlags && arg === "--title") {
+			options.title = getFlagValue(args, i, arg);
 			i++;
 			continue;
 		}

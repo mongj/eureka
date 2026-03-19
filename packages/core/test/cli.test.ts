@@ -78,8 +78,32 @@ describe("parseCliArgs", () => {
 		const { parseCliArgs } = await import("../cli.js");
 
 		expect(() => parseCliArgs(["--mode", "invalid", "show a vector"])).toThrow(
-			'"--mode" must be one of: default, snippet',
+			'"--mode" must be one of: default, snippet, image',
 		);
+	});
+
+	it("parses --mode image", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(parseCliArgs(["--mode", "image", "show unit circle"])).toEqual({
+			prompt: "show unit circle",
+			options: { mode: "image" },
+		});
+	});
+
+	it("parses --title flag", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(parseCliArgs(["--mode", "image", "--title", "Unit Circle", "show unit circle"])).toEqual({
+			prompt: "show unit circle",
+			options: { mode: "image", title: "Unit Circle" },
+		});
+	});
+
+	it("rejects missing value for --title", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(() => parseCliArgs(["--title"])).toThrow('Missing value for "--title"');
 	});
 
 	it("rejects missing value for --mode", async () => {

@@ -7,7 +7,7 @@
 **Why:** LLM-generated manim code fails ~30-50% on first attempt due to API misuse, import errors, or animation timing issues. An error-feedback loop would dramatically improve success rate.
 **Effort:** M
 **Depends on:** Core pipeline (prompt → code → video) must be working first.
-**Status:** In progress — render_video tool added to agent loop, self-correcting on failures with configurable max attempts.
+**Status:** In progress — render tool added to agent loop, self-correcting on failures with configurable max attempts.
 
 ## P2 — Medium Priority
 
@@ -16,6 +16,12 @@
 **Why:** The current templates are oriented toward explainer videos. Snippet mode would benefit from reference examples that match its constraints — clean compositions, ValueTracker patterns, minimal animation.
 **Effort:** M
 **Depends on:** Snippet mode feature (mode="snippet").
+
+### Image-optimized templates
+**What:** Curate 5-10 Manim templates in `agent-workspace-template/templates/` for static image composition patterns (function plots, geometric proofs, labeled diagrams, comparison layouts).
+**Why:** Image mode generates static frames, not animations. Reference templates with clean self.add()-based composition, balanced layouts, and publication-quality styling will improve LLM output quality.
+**Effort:** M
+**Depends on:** Image mode feature (mode="image").
 
 ### Sandboxed code execution
 **What:** Before any multi-user deployment, execute LLM-generated Python code in a sandboxed environment to prevent arbitrary code execution on the host.

@@ -33,6 +33,7 @@ export async function generateVideo(prompt: string, options: GenerateOptions = {
 		model: options.model,
 		signal,
 		mode: options.mode,
+		title: options.title,
 		render: {
 			quality,
 			timeoutMs: renderTimeoutMs,

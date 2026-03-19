@@ -7,7 +7,13 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
-import { AGENT_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT, SNIPPET_SYSTEM_PROMPT } from "./prompts.js";
+import {
+	AGENT_SYSTEM_PROMPT,
+	IMAGE_PLANNER_PROMPT,
+	IMAGE_SYSTEM_PROMPT,
+	SNIPPET_PLANNER_PROMPT,
+	SNIPPET_SYSTEM_PROMPT,
+} from "./prompts.js";
 import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools/index.js";
 import type { RenderToolConfig } from "./tools/render.js";
@@ -70,6 +76,40 @@ export async function planSnippet(prompt: string, options?: PlanSnippetOptions):
 	}
 
 	log.debug("Planner output:\n" + text);
+
+	return text;
+}
+
+/**
+ * Run the image planner: takes a user prompt, returns a structured image description.
+ * Uses a non-agent LLM call (no tools) with the IMAGE_PLANNER_PROMPT.
+ */
+export async function planImage(prompt: string, options?: PlanSnippetOptions): Promise<string> {
+	const config = getConfig();
+	const model = resolveModelFromString(config.models["plan-image"]);
+
+	log.info("Planning image composition...");
+
+	const response = await completeSimple(
+		model,
+		{
+			systemPrompt: IMAGE_PLANNER_PROMPT,
+			messages: [{ role: "user" as const, content: prompt, timestamp: Date.now() }],
+		},
+		{ signal: options?.signal },
+	);
+
+	const text = response.content
+		.filter((c): c is { type: "text"; text: string } => c.type === "text")
+		.map((c) => c.text)
+		.join("\n")
+		.trim();
+
+	if (!text) {
+		throw new EurekaError("Image planner produced empty output");
+	}
+
+	log.debug("Image planner output:\n" + text);
 
 	return text;
 }
@@ -137,7 +177,14 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		let systemPrompt: string;
 		let agentUserMessage: string;
 
-		if (mode === "snippet") {
+		if (mode === "image") {
+			const plannerOutput = await planImage(prompt, { signal: options?.signal });
+			systemPrompt = IMAGE_SYSTEM_PROMPT;
+			const titleInstruction = options?.title
+				? `\n\nTitle: "${options.title}" — render this as a Text() element at the top of the frame.`
+				: "";
+			agentUserMessage = `<image_plan>\n${plannerOutput}\n</image_plan>\n\nOriginal request: ${prompt}${titleInstruction}`;
+		} else if (mode === "snippet") {
 			const plannerOutput = await planSnippet(prompt, { signal: options?.signal });
 			systemPrompt = SNIPPET_SYSTEM_PROMPT;
 			agentUserMessage = `<animation_plan>\n${plannerOutput}\n</animation_plan>\n\nOriginal request: ${prompt}`;
