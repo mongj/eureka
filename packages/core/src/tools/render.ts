@@ -1,10 +1,9 @@
-import { readFile as fsReadFile } from "node:fs/promises";
-import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
 import { createLogger } from "@eureka/utils/logger";
+import { readFile as fsReadFile } from "node:fs/promises";
 import { lintManimCode } from "../lint.js";
-import { extractSceneName } from "../render.js";
-import { renderManimScene } from "../render.js";
+import { extractSceneName, renderManimScene } from "../render.js";
 import { RenderError, RenderTimeoutError, type ManimQuality } from "../types.js";
 
 const log = createLogger("Tools");
@@ -121,7 +120,7 @@ export function createRenderTool(
 							text: `Lint check failed with ${lintResult.violations.length} error(s):\n${violationLines}\n\nFix these issues in ${params.path} and call render_video again.`,
 						},
 					],
-					details: { videoPath: "", sceneName, attempt: attempts },
+					details: { outputPath: "", sceneName, attempt: attempts },
 				};
 			}
 
