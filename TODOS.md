@@ -11,6 +11,12 @@
 
 ## P2 — Medium Priority
 
+### Snippet-optimized templates
+**What:** Curate 5-10 Manim templates in `agent-workspace-template/templates/` specifically designed for short, clean snippet animations (no titles, minimal transitions, updater-heavy).
+**Why:** The current templates are oriented toward explainer videos. Snippet mode would benefit from reference examples that match its constraints — clean compositions, ValueTracker patterns, minimal animation.
+**Effort:** M
+**Depends on:** Snippet mode feature (mode="snippet").
+
 ### Sandboxed code execution
 **What:** Before any multi-user deployment, execute LLM-generated Python code in a sandboxed environment to prevent arbitrary code execution on the host.
 **Why:** The LLM generates Python that runs unsandboxed on the host machine. A malicious or confused output could execute arbitrary system commands. Acceptable for single-user prototype; blocks multi-user deployment.
@@ -19,6 +25,12 @@
 **Depends on:** Core pipeline working. Should be implemented before server/multi-user layer.
 
 ## P3 — Future
+
+### Prompt eval framework
+**What:** A test suite that runs prompts against sample inputs, scores the outputs (structured format adherence, code quality, render success rate), and tracks regressions across prompt edits.
+**Why:** As prompts multiply (snippet planner, snippet agent, future modes), manual testing becomes insufficient. Automated eval catches quality regressions when prompts are edited.
+**Effort:** L
+**Depends on:** Multiple prompts existing (delivered by snippet mode feature).
 
 ### Cloud rendering support
 **What:** Add ability to offload manim rendering to cloud infrastructure (Modal, AWS Lambda, or similar) for concurrent/heavy renders.
