@@ -50,7 +50,7 @@
 		"prepublishOnly": "pnpm clean && pnpm build"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.79.0",
+		"@anthropic-ai/sdk": "^0.80.0",
 		"@aws-sdk/client-bedrock-runtime": "^3.983.0",
 		"@google/genai": "^1.40.0",
 		"@mistralai/mistralai": "1.14.1",
