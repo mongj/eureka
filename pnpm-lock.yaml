@@ -85,8 +85,8 @@ importers:
         specifier: ^6.5.0
         version: 6.5.0
       undici:
-        specifier: ^7.19.1
-        version: 7.24.4
+        specifier: ^7.24.5
+        version: 7.24.5
       zod-to-json-schema:
         specifier: ^3.24.6
         version: 3.25.1(zod@4.3.6)
@@ -1632,8 +1632,8 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
-  undici@7.24.4:
-    resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
+  undici@7.24.5:
+    resolution: {integrity: sha512-3IWdCpjgxp15CbJnsi/Y9TCDE7HWVN19j1hmzVhoAkY/+CJx449tVxT5wZc1Gwg8J+P0LWvzlBzxYRnHJ+1i7Q==}
     engines: {node: '>=20.18.1'}
 
   util-deprecate@1.0.2:
@@ -3430,7 +3430,7 @@ snapshots:
 
   undici-types@7.18.2: {}
 
-  undici@7.24.4: {}
+  undici@7.24.5: {}
 
   util-deprecate@1.0.2: {}
 
