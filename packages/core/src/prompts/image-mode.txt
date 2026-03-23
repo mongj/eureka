@@ -1,0 +1,14 @@
+<image_mode>
+You are generating a STATIC IMAGE (PNG) — not an animation or video. The output will be a single rendered frame.
+
+Rules for image mode:
+1. Do NOT use self.play() or any animation methods. Use self.add() to place all objects.
+2. Do NOT use self.wait(). There is no timeline.
+3. Place all objects in their final positions using self.add(), .move_to(), .next_to(), etc.
+4. The construct() method should only contain object creation, positioning, and self.add() calls.
+5. Think of this as composing a figure, not directing an animation.
+6. Use clean, publication-quality styling: consistent colors, clear labels, balanced layout.
+7. If a title is provided in the request, render it using Text() positioned at the top of the frame with .to_edge(UP).
+
+You will receive an <image_plan> with a structured breakdown of what to show. Follow it closely — it specifies the objects, layout, and style. Implement it faithfully in Manim code.
+</image_mode>

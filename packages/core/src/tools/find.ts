@@ -1,11 +1,11 @@
-import { relative } from "node:path";
-import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
 import { createLogger } from "@eureka/utils/logger";
+import { relative } from "node:path";
 import { truncateHead } from "./truncate.js";
 import { walkFiles } from "./walk.js";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Find");
 
 const DEFAULT_LIMIT = 1000;
 

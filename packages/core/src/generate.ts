@@ -7,7 +7,13 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getConfig } from "./config.js";
-import { AGENT_SYSTEM_PROMPT, SNIPPET_PLANNER_PROMPT, SNIPPET_SYSTEM_PROMPT } from "./prompts.js";
+import {
+	AGENT_SYSTEM_PROMPT,
+	IMAGE_PLANNER_PROMPT,
+	IMAGE_SYSTEM_PROMPT,
+	SNIPPET_PLANNER_PROMPT,
+	SNIPPET_SYSTEM_PROMPT,
+} from "./prompts.js";
 import { extractSceneName } from "./render.js";
 import { createScopedTools } from "./tools/index.js";
 import type { RenderToolConfig } from "./tools/render.js";
@@ -74,6 +80,40 @@ export async function planSnippet(prompt: string, options?: PlanSnippetOptions):
 	return text;
 }
 
+/**
+ * Run the image planner: takes a user prompt, returns a structured image description.
+ * Uses a non-agent LLM call (no tools) with the IMAGE_PLANNER_PROMPT.
+ */
+export async function planImage(prompt: string, options?: PlanSnippetOptions): Promise<string> {
+	const config = getConfig();
+	const model = resolveModelFromString(config.models["plan-image"]);
+
+	log.info("Planning image composition...");
+
+	const response = await completeSimple(
+		model,
+		{
+			systemPrompt: IMAGE_PLANNER_PROMPT,
+			messages: [{ role: "user" as const, content: prompt, timestamp: Date.now() }],
+		},
+		{ signal: options?.signal },
+	);
+
+	const text = response.content
+		.filter((c): c is { type: "text"; text: string } => c.type === "text")
+		.map((c) => c.text)
+		.join("\n")
+		.trim();
+
+	if (!text) {
+		throw new EurekaError("Image planner produced empty output");
+	}
+
+	log.debug("Image planner output:\n" + text);
+
+	return text;
+}
+
 export interface GenerateOptions {
 	model?: string;
 	signal?: AbortSignal;
@@ -82,7 +122,8 @@ export interface GenerateOptions {
 		timeoutMs: number;
 		maxAttempts: number;
 	};
-	mode?: "default" | "snippet";
+	mode?: "default" | "snippet" | "image";
+	title?: string;
 }
 
 export interface GenerateResult {
@@ -94,8 +135,8 @@ export interface GenerateResult {
 	sceneName: string;
 	/** Path to the working directory containing the scene file */
 	workDir: string;
-	/** Absolute path to the rendered video (only present when render config was provided and succeeded) */
-	videoPath?: string;
+	/** Absolute path to the rendered output (only present when render config was provided and succeeded) */
+	outputPath?: string;
 }
 
 /**
@@ -136,7 +177,14 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		let systemPrompt: string;
 		let agentUserMessage: string;
 
-		if (mode === "snippet") {
+		if (mode === "image") {
+			const plannerOutput = await planImage(prompt, { signal: options?.signal });
+			systemPrompt = IMAGE_SYSTEM_PROMPT;
+			const titleInstruction = options?.title
+				? `\n\nTitle: "${options.title}" — render this as a Text() element at the top of the frame.`
+				: "";
+			agentUserMessage = `<image_plan>\n${plannerOutput}\n</image_plan>\n\nOriginal request: ${prompt}${titleInstruction}`;
+		} else if (mode === "snippet") {
 			const plannerOutput = await planSnippet(prompt, { signal: options?.signal });
 			systemPrompt = SNIPPET_SYSTEM_PROMPT;
 			agentUserMessage = `<animation_plan>\n${plannerOutput}\n</animation_plan>\n\nOriginal request: ${prompt}`;
@@ -155,7 +203,7 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 
 		// Track the file path written by the agent via tool execution events
 		let writtenPath: string | null = null;
-		let videoPath: string | null = null;
+		let outputPath: string | null = null;
 
 		agent.subscribe((event: AgentEvent) => {
 			if (event.type === "tool_execution_end" && !event.isError) {
@@ -163,8 +211,8 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 				if (event.toolName === "write_file" && details?.path) {
 					writtenPath = details.path;
 				}
-				if (event.toolName === "render_video" && details?.videoPath) {
-					videoPath = details.videoPath;
+				if (event.toolName === "render" && details?.outputPath) {
+					outputPath = details.outputPath;
 				}
 			}
 			// Log assistant messages for debugging
@@ -197,7 +245,6 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 		const writtenCode = await readFile(writtenPath, "utf-8");
 
 		log.info("Agent wrote scene to: " + writtenPath);
-		log.debug("Generated code:\n" + writtenCode);
 
 		const sceneName = extractSceneName(writtenCode);
 		if (!sceneName) {
@@ -211,8 +258,8 @@ export async function generateManimCode(prompt: string, options?: GenerateOption
 			workDir,
 		};
 
-		if (videoPath) {
-			result.videoPath = videoPath;
+		if (outputPath) {
+			result.outputPath = outputPath;
 		}
 
 		return result;

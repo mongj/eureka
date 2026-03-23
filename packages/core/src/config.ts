@@ -1,7 +1,7 @@
 /**
  * Model tasks used across the pipeline.
  */
-export type ModelTask = "generate" | "plan-snippet";
+export type ModelTask = "generate" | "plan-snippet" | "plan-image";
 
 /**
  * Map of pipeline tasks to model identifiers.
@@ -13,6 +13,7 @@ export interface CoreConfig {
 export const DEFAULT_MODELS: CoreConfig["models"] = {
 	generate: "openai/gpt-5.3-codex",
 	"plan-snippet": "openai/gpt-5.4",
+	"plan-image": "openai/gpt-5.4",
 };
 
 let _config: CoreConfig = {

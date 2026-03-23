@@ -78,8 +78,32 @@ describe("parseCliArgs", () => {
 		const { parseCliArgs } = await import("../cli.js");
 
 		expect(() => parseCliArgs(["--mode", "invalid", "show a vector"])).toThrow(
-			'"--mode" must be one of: default, snippet',
+			'"--mode" must be one of: default, snippet, image',
 		);
+	});
+
+	it("parses --mode image", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(parseCliArgs(["--mode", "image", "show unit circle"])).toEqual({
+			prompt: "show unit circle",
+			options: { mode: "image" },
+		});
+	});
+
+	it("parses --title flag", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(parseCliArgs(["--mode", "image", "--title", "Unit Circle", "show unit circle"])).toEqual({
+			prompt: "show unit circle",
+			options: { mode: "image", title: "Unit Circle" },
+		});
+	});
+
+	it("rejects missing value for --title", async () => {
+		const { parseCliArgs } = await import("../cli.js");
+
+		expect(() => parseCliArgs(["--title"])).toThrow('Missing value for "--title"');
 	});
 
 	it("rejects missing value for --mode", async () => {
@@ -114,7 +138,7 @@ describe("runCli", () => {
 		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		const result: GenerateResult = {
-			videoPath: "/tmp/demo.mp4",
+			outputPath: "/tmp/demo.mp4",
 			code: "from manim import *",
 			sceneName: "DemoScene",
 			durationMs: 6912,
@@ -131,7 +155,7 @@ describe("runCli", () => {
 		expect(logged).toHaveLength(6);
 		expect(logged[0]).toContain("Prompt: show a circle");
 		expect(logged[1]).toContain("Generating video...");
-		expect(logged[2]).toContain("Video: /tmp/demo.mp4");
+		expect(logged[2]).toContain("Output: /tmp/demo.mp4");
 		expect(logged[3]).toContain("Scene: DemoScene");
 		expect(logged[4]).toContain("Duration: 6912ms");
 		expect(logged[5]).toContain("Artifacts: /tmp/eureka-demo");

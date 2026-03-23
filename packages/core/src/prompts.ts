@@ -23,6 +23,8 @@ const manimBase = loadPromptFile("manim-base.txt");
 const agentWorkflow = loadPromptFile("agent-workflow.txt");
 const snippetMode = loadPromptFile("snippet-mode.txt");
 const snippetPlanner = loadPromptFile("snippet-planner.txt");
+const imagePlanner = loadPromptFile("image-planner.txt");
+const imageMode = loadPromptFile("image-mode.txt");
 
 /** Base Manim system prompt — rules and style guidelines. */
 export const MANIM_SYSTEM_PROMPT = manimBase;
@@ -35,3 +37,9 @@ export const SNIPPET_PLANNER_PROMPT = snippetPlanner;
 
 /** Agent system prompt for snippet mode — base + snippet overrides + workflow. */
 export const SNIPPET_SYSTEM_PROMPT = `${manimBase}\n\n${snippetMode}\n\n${agentWorkflow}`;
+
+/** System prompt for the image planner LLM call. */
+export const IMAGE_PLANNER_PROMPT = imagePlanner;
+
+/** Agent system prompt for image mode — base + image overrides + workflow. */
+export const IMAGE_SYSTEM_PROMPT = `${manimBase}\n\n${imageMode}\n\n${agentWorkflow}`;

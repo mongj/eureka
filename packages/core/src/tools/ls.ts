@@ -1,10 +1,10 @@
+import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
+import { createLogger } from "@eureka/utils/logger";
 import { readdir as fsReaddir, stat as fsStat } from "node:fs/promises";
 import { join } from "node:path";
-import { Type } from "@eureka/ai";
-import type { AgentTool, AgentToolResult } from "@eureka/agent";
-import { createLogger } from "@eureka/utils/logger";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Ls");
 
 const DEFAULT_LIMIT = 500;
 

@@ -1,10 +1,10 @@
-import { readFile as fsReadFile } from "node:fs/promises";
-import { Type } from "@eureka/ai";
 import type { AgentTool, AgentToolResult } from "@eureka/agent";
+import { Type } from "@eureka/ai";
 import { createLogger } from "@eureka/utils/logger";
-import { DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize, type TruncationResult, truncateHead } from "./truncate.js";
+import { readFile as fsReadFile } from "node:fs/promises";
+import { DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize, truncateHead, type TruncationResult } from "./truncate.js";
 
-const log = createLogger("Tools");
+const log = createLogger("Tools/Read");
 
 const readSchema = Type.Object({
 	path: Type.String({ description: "Relative file path within the working directory" }),

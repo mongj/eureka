@@ -1,7 +1,7 @@
+import { createLogger } from "@eureka/utils/logger";
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
-import { createLogger } from "@eureka/utils/logger";
 import type { LintViolation } from "./types.js";
 
 const execFileAsync = promisify(execFile);
@@ -130,6 +130,7 @@ export async function lintManimCode(filePath: string, workDir: string): Promise<
 			// Exit 1 or 2 — fixit found violations or syntax errors
 			const violations = parseLintOutput(error.stdout);
 			log.warn(`lint: ${violations.length} violation(s) found`);
+			log.warn(error.stdout);
 			return { passed: false, violations, autofixApplied, autofixCount };
 		}
 
