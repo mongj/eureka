@@ -322,6 +322,32 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 			}
 		}
 
+		// Process Fireworks AI models
+		if (data["fireworks-ai"]?.models) {
+			for (const [modelId, model] of Object.entries(data["fireworks-ai"].models)) {
+				const m = model as ModelsDevModel;
+				if (m.tool_call !== true) continue;
+
+				models.push({
+					id: modelId,
+					name: m.name || modelId,
+					api: "openai-completions",
+					provider: "fireworks-ai",
+					baseUrl: "https://api.fireworks.ai/inference/v1",
+					reasoning: m.reasoning === true,
+					input: m.modalities?.input?.includes("image") ? ["text", "image"] : ["text"],
+					cost: {
+						input: m.cost?.input || 0,
+						output: m.cost?.output || 0,
+						cacheRead: m.cost?.cache_read || 0,
+						cacheWrite: m.cost?.cache_write || 0,
+					},
+					contextWindow: m.limit?.context || 4096,
+					maxTokens: m.limit?.output || 4096,
+				});
+			}
+		}
+
 		// Process Cerebras models
 		if (data.cerebras?.models) {
 			for (const [modelId, model] of Object.entries(data.cerebras.models)) {
@@ -641,7 +667,7 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 
 async function generateModels() {
 	// Fetch models from both sources
-	// models.dev: Anthropic, Google, OpenAI, Groq, Cerebras
+	// models.dev: Anthropic, Google, OpenAI, Groq, Cerebras, Fireworks
 	// OpenRouter: xAI and other providers (excluding Anthropic, Google, OpenAI)
 	// AI Gateway: OpenAI-compatible catalog with tool-capable models
 	const modelsDevModels = await loadModelsDevData();
