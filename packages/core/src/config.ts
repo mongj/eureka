@@ -11,7 +11,7 @@ export interface CoreConfig {
 	models: Record<ModelTask, string>;
 }
 export const DEFAULT_MODELS: CoreConfig["models"] = {
-	generate: "openai/gpt-5.3-codex",
+	generate: "cerebras/zai-glm-4.7",
 	"plan-snippet": "openai/gpt-5.4",
 	"plan-image": "openai/gpt-5.4",
 };
