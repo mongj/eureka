@@ -30,6 +30,7 @@ export type KnownProvider =
 	| "xai"
 	| "groq"
 	| "cerebras"
+	| "fireworks-ai"
 	| "openrouter"
 	| "vercel-ai-gateway"
 	| "zai"
