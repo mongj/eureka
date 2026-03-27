@@ -10610,8 +10610,8 @@ export const MODELS = {
 			reasoning: false,
 			input: ["text", "image"],
 			cost: {
-				input: 0.19999999999999998,
-				output: 0.19999999999999998,
+				input: 0.09999999999999999,
+				output: 0.09999999999999999,
 				cacheRead: 0,
 				cacheWrite: 0,
 			},
@@ -10683,8 +10683,8 @@ export const MODELS = {
 				cacheRead: 0.02,
 				cacheWrite: 0,
 			},
-			contextWindow: 256000,
-			maxTokens: 256000,
+			contextWindow: 262144,
+			maxTokens: 4096,
 		} satisfies Model<"openai-completions">,
 		"stepfun/step-3.5-flash:free": {
 			id: "stepfun/step-3.5-flash:free",
